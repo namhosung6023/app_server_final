@@ -39,12 +39,19 @@ const upload = multer({
 
 const fs = require('fs');
 const path = require('path');//이미지 저장되는 위치 설정
+const UsersModel = require('../models/UsersModel');
 
 
-router.post('/upload', verifyToken, upload.single('file'), (req, res) => {
+router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
+    console.log(req.userId);
 
     let path;
     path = req.file.location;
+
+    await UsersModel.findOneAndUpdate({ _id: req.userId },
+        { $push: { "bodyLog": {
+        "morningBody": req.file.location
+      }}})
 
     return res.status(200).json({ path: path });
 });
