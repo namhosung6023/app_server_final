@@ -3,6 +3,7 @@ const router = express.Router();
 const UsersModel = require('../models/UsersModel');
 const TrainerModel = require('../models/TrainerModel');
 const verifyToken = require('../libs/verifyToken');
+const moment = require("moment");
 
 // 트레이너가 회원의 체크리스트 추가
 router.put('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
@@ -28,11 +29,23 @@ router.put('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
 
 // 회원 체크리스트 출력
 router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
-  let result = await UsersModel.findOne({ _id: req.params.id }).exec();
-  let data = {
-    checklist: result.checklist
-  };
-  res.status(200).json({checklist: data.checklist, success: true});
+  let result = await UsersModel.find({ _id: req.params.id }).exec();
+
+  result.checklist.map((item) => {
+    let checklist=[]
+    let date = ''
+    let selectDate = moment(req.body.date).format('YYYY-MM-DD')
+
+    for(var i = 0; i <= result.checklist.length; i++) {
+      if(result.checklist[i].date === selectDate){
+        date = moment(result.checklist[i].date).format('YYYY-MM-DD')
+        // cheecklist = await UsersModel.findOne({ date:  })
+      }
+    }
+
+  })
+
+  res.status(200).json({checklist: data.checklist , success: true});
 });
 
 //체크박스 서버 
