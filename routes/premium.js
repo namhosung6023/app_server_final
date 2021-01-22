@@ -29,23 +29,62 @@ router.put('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
 
 // 회원 체크리스트 출력
 router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
-  let result = await UsersModel.find({ _id: req.params.id }).exec();
-
-  result.checklist.map((item) => {
+  try {
+    let result = await UsersModel.findOne({ _id: req.params.id }).exec();
+  
     let checklist=[]
-    let date = ''
-    let selectDate = moment(req.body.date).format('YYYY-MM-DD')
+    result.checklist.map((item) => {
+      let date = moment(item.date).format('YYYY-MM-DD');
+      let selectDate = moment(req.body.date).format('YYYY-MM-DD');
 
-    for(var i = 0; i <= result.checklist.length; i++) {
-      if(result.checklist[i].date === selectDate){
-        date = moment(result.checklist[i].date).format('YYYY-MM-DD')
-        // cheecklist = await UsersModel.findOne({ date:  })
+      if(date === selectDate){
+        checklist.push(item)
+      }else {
+        res.status(200).json({ success: false })
       }
+  
+    })
+
+    let data = {
+      checklist
     }
+  
+    res.status(200).json({ checklist: data.checklist , success: true});
 
-  })
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({error: true, message: err.message})
+  }
+});
 
-  res.status(200).json({checklist: data.checklist , success: true});
+// 회원 관리일지 출력
+router.get('/bodylog/user/:id',verifyToken, async (req, res, next) => {
+  try {
+    let result = await UsersModel.findOne({ _id: req.params.id }).exec();
+  
+    let bodyLog=[]
+    result.bodyLog.map((item) => {
+      let date = moment(item.date).format('YYYY-MM-DD');
+      let selectDate = moment(req.body.date).format('YYYY-MM-DD');
+
+      if(date === selectDate){
+        bodyLog.push(item)
+      }else {
+        res.status(200).json({ success: false })
+      }
+  
+    })
+
+    let data = {
+      bodyLog
+    }
+  
+    res.status(200).json({ bodyLog: data.bodyLog , success: true});
+
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({error: true, message: err.message})
+  }
 });
 
 //체크박스 서버 
