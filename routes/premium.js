@@ -35,12 +35,11 @@ router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
     let checklist=[]
     result.checklist.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
-      let selectDate = moment(req.body.date).format('YYYY-MM-DD');
+      let selectDate = moment(req.query.date).format('YYYY-MM-DD');
+      // console.log(date);
 
       if(date === selectDate){
         checklist.push(item)
-      }else {
-        res.status(200).json({ success: false })
       }
   
     })
@@ -48,8 +47,14 @@ router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
     let data = {
       checklist
     }
+
+    // console.log(checklist);
+    if(checklist){
+      return res.json({ checklist: data.checklist , success: true});
+    } else{
+      return res.json({ checklist: data.checklist , success: false })
+    }
   
-    res.status(200).json({ checklist: data.checklist , success: true});
 
   } catch (err) {
     console.log(err)

@@ -5,6 +5,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const verifyToken = require('../libs/verifyToken');
+const moment = require("moment");
 
 AWS.config.update({
     region: awsconfig.region,
@@ -40,6 +41,7 @@ const upload = multer({
 const fs = require('fs');
 const path = require('path');//이미지 저장되는 위치 설정
 const UsersModel = require('../models/UsersModel');
+const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
 
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
@@ -55,6 +57,41 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 
     return res.status(200).json({ path: path });
 });
+
+// 사진 불러오기 
+router.get('/diary/user/:id', verifyToken, async (req,res, next) => {
+    console.log(req.query.date);
+    try{
+    let result = await UsersModel.findOne({_id: req.params.id}).exec();
+
+    let bodyLog=[]
+    result.bodyLog.map((item) => {
+        let data = moment(item.data).format('YYYY-MM-DD');
+        let selectDate = moment(req.query.date).format('YYYY-MM-DD');
+
+        if(data === selectDate) {
+            bodyLog.push(item)
+        }
+    })
+
+    let data = {
+        bodyLog
+    }
+
+    console.log(bodyLog);
+    if(bodyLog){
+        return res.json({ bodyLog: data.bodyLog});
+    }else {
+        return res.json({ bodyLog: data.bodyLog});
+    }
+    
+    }catch (err) {
+        console.log(err)
+        return res.status(500).json({error: true, message: err.message})
+      } 
+
+});
+
 
 
 /* 삭제 요청 처리 */
