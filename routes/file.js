@@ -25,12 +25,13 @@ const upload = multer({
         s3: s3,
         bucket: awsconfig.Bucket,
         key: function (req, file, callback) {
+            console.log(file);
             if (file.fieldname === 'thumbnail') {
                 callback(null, 'images/thumbnail-' + Date.now() + '.' + file.mimetype.split('/')[1])
             } else if (file.fieldname === 'image') {
                 callback(null, 'images/image-' + Date.now() + '.' + file.mimetype.split('/')[1])
             } else {
-                callback(null, 'images/image-' + Date.now() + '.' + file.mimetype.split('/')[1])
+                callback(null, 'images/' + req.userId + file.originalname.split('.')[0] + '.' + file.mimetype.split('/')[1])
             }
         },
         acl: 'public-read-write',
@@ -45,68 +46,21 @@ const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
 
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-    console.log(req.body.pictureNumber);
-    console.log(req.file.location);
+    
     const startDate = new Date(req.body.date);
     startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(req.body.date);
     endDate.setHours(23, 59, 59, 59);
-
-    const filter = {_id: req.params.id, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
-    if (req.body.pictureNumber == 0 ) await UsersModel.findOneAndUpdate(filter, {$push: {"bodyLog.$.morningBody": req.file.location}}).exec();
-//     try {
-//         let result = await UsersModel.findOne({ _id: req.userId }).exec();
-
-//         let pickDate= ''
-//         result.bodyLog.map((item) => {
-//           let date = moment(item.date).format('YYYY-MM-DD');
-//           let selectDate = moment(req.body.date).format('YYYY-MM-DD');
     
-//             if(date === selectDate && req.body.pictureNumber == 0){
-//                 return pickDate = selectDate
-//             }else {
-//                 return res.status(500).json({ success: false })
-//             }
-//         })
-//         await UsersModel.update(
-//             { date: pickDate },
-//             { $addToSet: {"bodyLog ": {
-//               "morningBody" : req.file.location,
-//           }}}
-//         );
-      
-//         return res.status(200).json({ success: true});
-    
-//       } catch (err) {
-//         console.log(err)
-//         return res.status(500).json({error: true, message: err.message})
-//       }
-  
-    // let selectDate = moment(req.body.date).format('YYYY-MM-DD');
-    // console.log(req.body.date);
+    const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
+    const update = { $addToSet: { "bodyLog.$.morningBody": req.file.location }};
+    try {
 
-    // let path;
-    // path = req.file.location;
-    // console.log(req.file.location);
-
-    // if (pictureNumber == 0) {
-    //     await UsersModel.findOneAndUpdate({ _id: req.userId },
-    //         { $addToSet: {"bodyLog ":{
-    //             "morningBody" : req.file.location,
-    //         }}}
-    //         );
-    // };
-
-    // await UsersModel.findOneAndUpdate({ _id: req.userId },
-    //     { $addToSet: { "bodyLog": {
-    //     "morningBody": req.file.location,
-    //     "nightBody": req.file.location,
-    //     "morningFood":req.file.location,
-    //     "afternoonFood":req.file.location,
-    //     "nightFood": req.file.location
-    //   }}})
-
-    // return res.status(200).json({ path: path });
+        const result = await UsersModel.findOne(filter);
+        if(!result) await UsersModel.findOneAndUpdate({_id: req.userId}, {$addToSet: {"bodyLog": {"morningBody": req.file.location}}});
+        else await UsersModel.findOneAndUpdate(filter, update);
+        return res.json({photoUrl: req.file.location});
+    }
 });
 
 // 사진 불러오기 
