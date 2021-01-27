@@ -80,19 +80,21 @@ const UsersSchema = new Schema({
                type: Number,
                default: "",
            },
-           foodlist: [
-               {
-                   title: {
-                       type: String,
-                       default: "",
-                   },
-                   time: {
-                    type: String,
-                    default: "",
-                    },
-                    foodPhoto: [],
-               }
-           ],
+           morningFood: [],
+           morningFoodTitle:{
+               type: String,
+               default: ""
+           },
+           afternoonFood: [],
+           afternoonFoodTitle: {
+               type: String,
+               default: ""
+           },
+           nightFood: [],
+           nightFoodTitle: {
+               type: String,
+               default: "",
+           },
            trainerComment: {
             type: String,
             default: "",
