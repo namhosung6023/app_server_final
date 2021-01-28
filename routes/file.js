@@ -56,14 +56,10 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     try {
         const result = await UsersModel.findOne(filter);
         if(!result) {
-            console.log('선택된 날짜에 바디로그가 없다');
             await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"date": req.body.date,}}} );
             await UsersModel.findOneAndUpdate(filter, update);
-            // await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"morningBody": req.file.location,}}} );
         }
         else {
-            console.log('선택된 날짜의 바디로그 업데이트');
-            // await UsersModel.findOneAndUpdate( {_id: req.userid} , {$push: {"morningBody": {in :req.file.location}}}, option );
             await UsersModel.updateOne(filter, update);
         }
         return res.json({photoUrl: req.file.location});
@@ -93,7 +89,7 @@ router.get('/diary/user/:id', verifyToken, async (req,res, next) => {
         bodyLog
     }
 
-    // console.log(bodyLog);
+    console.log(bodyLog);
     if(bodyLog){
         return res.json({ bodyLog: data.bodyLog});
     }else {
