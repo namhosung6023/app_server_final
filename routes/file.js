@@ -46,20 +46,30 @@ const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
 
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-    
-    const startDate = new Date(req.body.date);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(req.body.date);
-    endDate.setHours(23, 59, 59, 59);
+    console.log(req.body.date);
+    const date = new Date(req.body.date);
+    const startDate = date.setHours(0,0,0);
+    const endDate = date.setHours(23,59,59);
     
     const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
     const update = { $addToSet: { "bodyLog.$.morningBody": req.file.location }};
     try {
-
         const result = await UsersModel.findOne(filter);
-        if(!result) await UsersModel.findOneAndUpdate({_id: req.userId}, {$addToSet: {"bodyLog": {"morningBody": req.file.location}}});
-        else await UsersModel.findOneAndUpdate(filter, update);
+        if(!result) {
+            console.log('선택된 날짜에 바디로그가 없다');
+            await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"date": req.body.date,}}} );
+            await UsersModel.findOneAndUpdate(filter, update);
+            // await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"morningBody": req.file.location,}}} );
+        }
+        else {
+            console.log('선택된 날짜의 바디로그 업데이트');
+            // await UsersModel.findOneAndUpdate( {_id: req.userid} , {$push: {"morningBody": {in :req.file.location}}}, option );
+            await UsersModel.updateOne(filter, update);
+        }
         return res.json({photoUrl: req.file.location});
+
+    } catch(err){
+        console.log(`mongoDB err : ${err.message}`);
     }
 });
 
