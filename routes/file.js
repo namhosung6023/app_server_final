@@ -5,7 +5,9 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const verifyToken = require('../libs/verifyToken');
-const moment = require("moment");
+const moment = require("moment-timezone");
+
+
 
 AWS.config.update({
     region: awsconfig.region,
@@ -44,22 +46,27 @@ const path = require('path');//이미지 저장되는 위치 설정
 const UsersModel = require('../models/UsersModel');
 const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
-
+//사진 몽고디비에 저장하기
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     console.log(req.body.date);
-    const date = new Date(req.body.date);
-    const startDate = date.setHours(0,0,0);
-    const endDate = date.setHours(23,59,59);
+    const date = moment(req.body.date);
+    const startDate = new Date(new Date().setHours(00, 00, 00));
+    const endDate = new Date(new Date().setHours(23, 59, 59));
+    console.log(startDate);
+    console.log(endDate);
+
     
     const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
     const update = { $addToSet: { "bodyLog.$.morningBody": req.file.location }};
     try {
         const result = await UsersModel.findOne(filter);
-        if(!result) {
-            await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"date": req.body.date,}}} );
+        if(!result) {            
+            console.log("선택된 날짜가 없으면 실행");
+            await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"date": req.body.date,}}});
             await UsersModel.findOneAndUpdate(filter, update);
         }
         else {
+            console.log("선택된 날짜가 있으면 실행");
             await UsersModel.updateOne(filter, update);
         }
         return res.json({photoUrl: req.file.location});
@@ -89,7 +96,7 @@ router.get('/diary/user/:id', verifyToken, async (req,res, next) => {
         bodyLog
     }
 
-    console.log(bodyLog);
+    // console.log(bodyLog);
     if(bodyLog){
         return res.json({ bodyLog: data.bodyLog});
     }else {
