@@ -5,7 +5,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
 const verifyToken = require('../libs/verifyToken');
-const moment = require("moment-timezone");
+const moment = require("moment");
 
 
 
@@ -49,25 +49,32 @@ const { KinesisVideoSignalingChannels } = require('aws-sdk');
 //사진 몽고디비에 저장하기
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     console.log(req.body.date);
-    const date = moment(req.body.date);
-    const startDate = new Date(new Date().setHours(00, 00, 00));
-    const endDate = new Date(new Date().setHours(23, 59, 59));
+    // const date = moment(req.body.date);
+    // const startDate = new Date(new Date().setHours(00, 00, 00));
+    // const endDate = new Date(new Date().setHours(23, 59, 59));
+    require('moment-timezone');
+    moment.tz.setDefault("Asia/Seoul");
+    //HH:mm:ss
+    const startDate = moment().format("YYYY-MM-DD");
+    const endDate = moment().format("YYYY-MM-DD");
     console.log(startDate);
     console.log(endDate);
 
     
-    const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
-    const update = { $addToSet: { "bodyLog.$.morningBody": req.file.location }};
+    const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lte": endDate}};
+    console.log(filter);
+    const update = { $push: { "bodyLog.$.morningBody": req.file.location }};
+    console.log(update);
     try {
         const result = await UsersModel.findOne(filter);
         if(!result) {            
             console.log("선택된 날짜가 없으면 실행");
-            await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"date": req.body.date,}}});
+            await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"morningBody": req.body.date,}}});
             await UsersModel.findOneAndUpdate(filter, update);
         }
         else {
             console.log("선택된 날짜가 있으면 실행");
-            await UsersModel.updateOne(filter, update);
+            await UsersModel.update(filter, update);
         }
         return res.json({photoUrl: req.file.location});
 
@@ -75,6 +82,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
         console.log(`mongoDB err : ${err.message}`);
     }
 });
+
 
 // 사진 불러오기 
 router.get('/diary/user/:id', verifyToken, async (req,res, next) => {
