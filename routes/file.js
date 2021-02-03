@@ -48,7 +48,9 @@ const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
 //사진 몽고디비에 저장하기
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-    console.log(req.body.date);
+    console.log('----------------------------------------------------------------');
+    console.log(req.body.pictureNumber);
+    const pictureNumber = req.body.pictureNumber;
     // const date = moment(req.body.date);
     // const startDate = new Date(new Date().setHours(00, 00, 00));
     // const endDate = new Date(new Date().setHours(23, 59, 59));
@@ -64,19 +66,29 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
     console.log(filter);
     const update = { $push: { "bodyLog.$.morningBody": req.file.location }};
-    console.log(update);
     try {
         const result = await UsersModel.findOne(filter);
         if(!result) {            
             console.log("선택된 날짜가 없으면 실행");
-            // await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"morningBody": req.body.date,}}});
-            await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"morningBody": req.file.location, "date": startDate} }});
+            console.log(pictureNumber);
+            if (pictureNumber === '0') await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"morningBody": req.file.location, "date": startDate} }});
+            else if (pictureNumber === '1') {
+                await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"nightBody": req.file.location, "date": startDate} }});
+            }
+            else if (pictureNumber === '2') await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"morningFood": req.file.location, "date": startDate} }});
+            else if (pictureNumber === '3') await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"afternoonFood": req.file.location, "date": startDate} }});
+            else if (pictureNumber === '4') await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"nightFood": req.file.location, "date": startDate} }});
+            else await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"snack": req.file.location, "date": startDate} }});
         }
         else {
             console.log("선택된 날짜가 있으면 실행");
-            // await UsersModel.updateOne(filter, update);
-            
-            await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].morningBody": req.file.location }});
+            console.log(pictureNumber);
+            if (pictureNumber === '0') await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].morningBody": req.file.location }});
+            else if (pictureNumber === '1') await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].nightBody": req.file.location }});
+            else if (pictureNumber === '2') await UsersModel.findOneAndUpdate({_id: req.userId,  "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].morningFood": req.file.location }});
+            else if (pictureNumber === '3') await UsersModel.findOneAndUpdate({_id: req.userId,  "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].afternoonFood": req.file.location }});
+            else if (pictureNumber === '4') await UsersModel.findOneAndUpdate({_id: req.userId,  "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].nightFood": req.file.location }});
+            else await UsersModel.findOneAndUpdate({_id: req.userId,  "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].snack": req.file.location }});
         }
         return res.json({photoUrl: req.file.location});
 
