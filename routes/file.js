@@ -55,13 +55,13 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     require('moment-timezone');
     moment.tz.setDefault("Asia/Seoul");
     //HH:mm:ss
-    const startDate = moment().format("YYYY-MM-DD");
-    const endDate = moment().format("YYYY-MM-DD");
+    const startDate = moment(req.body.date, "YYYY-MM-DD");
+    const endDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
     console.log(startDate);
     console.log(endDate);
 
     
-    const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lte": endDate}};
+    const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
     console.log(filter);
     const update = { $push: { "bodyLog.$.morningBody": req.file.location }};
     console.log(update);
@@ -69,12 +69,14 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
         const result = await UsersModel.findOne(filter);
         if(!result) {            
             console.log("선택된 날짜가 없으면 실행");
-            await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"morningBody": req.body.date,}}});
-            await UsersModel.findOneAndUpdate(filter, update);
+            // await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"morningBody": req.body.date,}}});
+            await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"morningBody": req.file.location, "date": startDate} }});
         }
         else {
             console.log("선택된 날짜가 있으면 실행");
-            await UsersModel.update(filter, update);
+            // await UsersModel.updateOne(filter, update);
+            
+            await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].morningBody": req.file.location }});
         }
         return res.json({photoUrl: req.file.location});
 
