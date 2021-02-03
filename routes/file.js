@@ -46,31 +46,18 @@ const path = require('path');//이미지 저장되는 위치 설정
 const UsersModel = require('../models/UsersModel');
 const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
-//사진 몽고디비에 저장하기
+//다이어리 사진 몽고디비에 저장하기
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-    console.log('----------------------------------------------------------------');
-    console.log(req.body.pictureNumber);
     const pictureNumber = req.body.pictureNumber;
-    // const date = moment(req.body.date);
-    // const startDate = new Date(new Date().setHours(00, 00, 00));
-    // const endDate = new Date(new Date().setHours(23, 59, 59));
     require('moment-timezone');
     moment.tz.setDefault("Asia/Seoul");
-    //HH:mm:ss
     const startDate = moment(req.body.date, "YYYY-MM-DD");
     const endDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
-    console.log(startDate);
-    console.log(endDate);
-
-    
     const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
-    console.log(filter);
     const update = { $push: { "bodyLog.$.morningBody": req.file.location }};
     try {
         const result = await UsersModel.findOne(filter);
-        if(!result) {            
-            console.log("선택된 날짜가 없으면 실행");
-            console.log(pictureNumber);
+        if(!result) {
             if (pictureNumber === '0') await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"morningBody": req.file.location, "date": startDate} }});
             else if (pictureNumber === '1') {
                 await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"nightBody": req.file.location, "date": startDate} }});
@@ -81,8 +68,6 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
             else await UsersModel.findOneAndUpdate({_id: req.userId}, { $push: { "bodyLog": {"snack": req.file.location, "date": startDate} }});
         }
         else {
-            console.log("선택된 날짜가 있으면 실행");
-            console.log(pictureNumber);
             if (pictureNumber === '0') await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].morningBody": req.file.location }});
             else if (pictureNumber === '1') await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].nightBody": req.file.location }});
             else if (pictureNumber === '2') await UsersModel.findOneAndUpdate({_id: req.userId,  "bodyLog.date": {"$gte": startDate, "$lt": endDate}}, { $push: { "bodyLog.$[].morningFood": req.file.location }});
