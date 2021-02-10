@@ -120,4 +120,26 @@ router.post('/comment/user/:id', verifyToken, async (req, res, next) =>{
   )
 })
 
+//몸무게 몽고 디비에 저장하는 서버 
+router.post('/diary/weight/:id', verifyToken, async (req, res) => {
+  const pictureNumber = req.body.pictureNumber;
+  require('moment-timezone');
+  moment.tz.setDefault("Asia/Seoul");
+  const startDate = moment(req.body.date, ' YYY-MM-DD');
+  const endDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
+  const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
+  try {
+    const result = await UserModel.findOne(filter);
+    if(!result){
+      if (pictureNumeber === '0') await UserModel.findOneAndUpdate({_id: req.userId}, {$push:{"bodyLog": {"morningWeight": Number, "date" : startDate}}});
+      else (pictureNumber === '1') {
+        await UserModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"nightWeight": Number, "date": startDate}}});
+      }
+    }
+    else{
+      if(pictureNumber === '0') await UserModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, {$push: {"bodyLog.$[].morningWeight": Number}});
+    }
+  }
+})
+
 module.exports = router

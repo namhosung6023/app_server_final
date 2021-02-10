@@ -54,7 +54,6 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     const startDate = moment(req.body.date, "YYYY-MM-DD");
     const endDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
     const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
-    const update = { $push: { "bodyLog.$.morningBody": req.file.location }};
     try {
         const result = await UsersModel.findOne(filter);
         if(!result) {
