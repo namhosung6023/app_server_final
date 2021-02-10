@@ -13,12 +13,12 @@ router.post('/join', async (req, res, next) => {
     }
     UsersModel.findOne({ email: req.body.email }, (err, user) => {
         if(err) {
-            return res.status(500).json({ error: true, message: "Server error" });
+            return res.status(500).json({ success: false, message: "Server error" });
         } else if (user) {
             console.log("이미 회원 가입 하였습니다.");
             return res.status(200).json({
                 status: 409,
-                error: true,
+                success: false,
                 message: "이미 회원 가입 하였습니다.",
               });
         }else{
@@ -31,7 +31,7 @@ router.post('/join', async (req, res, next) => {
         
               userInfo.save((err) => {
                 if(err){
-                    return res.json({success: false, msg: 'mongodb저장 실패'});
+                    return res.json({success: false, message: 'mongodb저장 실패'});
                     console.log(err);
                 }
             });
