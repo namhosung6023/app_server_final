@@ -122,26 +122,32 @@ router.post('/comment/user/:id', verifyToken, async (req, res, next) =>{
 
 //몸무게 몽고 디비에 저장하는 서버 
 router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
-  const pictureNumber = req.body.pictureNumber;
+  const weightNumber = req.body.weightNumber;
   require('moment-timezone');
   moment.tz.setDefault("Asia/Seoul");
-  const startDate = moment(req.body.date, ' YYY-MM-DD');
+  const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
   const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
-  const morningWeight = 0.0;  // const morningWeight = req.body.morningWeight;
-  const nightWeight = 0.0;
+  const morningWeight = req.body.morningWeight;  // const morningWeight = req.body.morningWeight;
+  const nightWeight = req.body.nightWeight;
+  console.log(req.userId);
+  console.log(req.body.morningWeight);
+  console.log(req.body.nightWeight);
   try {
-    const result = await UserModel.findOne(filter);
+    const result = await UsersModel.findOne(filter);
     if(!result){
-      if (pictureNumeber === '0') await UserModel.findOneAndUpdate({_id: req.userId}, {$push:{"bodyLog": {"morningWeight": morningWeight, "date" : startDate}}});
-      else if(pictureNumber === '1') 
-        await UserModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"nightWeight": nightWeight, "date": startDate}}});
+      console.log('검색경과없음');
+
+      if (weightNumber === 0) await UsersModel.findOneAndUpdate({_id: req.userId}, {$push:{"bodyLog": {"morningWeight": req.body.morningWeight, "date" : startDate}}});
+      else if(weightNumber === 1) 
+        await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"nightWeight": req.body.nightWeight, "date": startDate}}});
     }
     else {
-      if(pictureNumber === '0') await UserModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, {$push: {"bodyLog.$[].morningWeight": morningWeight}});
-      else if (pictureNumber === '1') await UserModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"gte" : startDate, "$lt": endDate}}, {$push: {"bodyLog.$[].nightWeight": nightWeight}});
+      console.log('검색결과 있으면 실행');
+      if(weightNumber === 0) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, { $push: { "morningWeight": req.body.morningWeight}});
+      else if (weightNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, { $push: {"nightWeight": req.body.nightWeight}});
     }
-    return res.json({ds});
+    return res.json({"success": true});
 
 
   } catch (err){
