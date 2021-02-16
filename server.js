@@ -6,6 +6,7 @@ const connectDB = require('./config/db')
 const bodyParser = require('body-parser')
 const routes = require('./routes/index')
 const accounts = require('./routes/accounts')
+const trainer = require("./routes/trainer");
 const premium = require('./routes/premium')
 const file = require('./routes/file')
 
@@ -21,6 +22,7 @@ app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use("/accounts", accounts)
+app.use("/trainer", trainer);
 app.use("/premium", premium)
 app.use("/file", file)
 //app.use(passport.initialize())

@@ -2,21 +2,87 @@ const express = require('express');
 const router = express.Router();
 const UsersModel = require('../models/UsersModel');
 const TrainerModel = require('../models/TrainerModel');
+const PremiumModel = require('../models/PremiumModel');
 const verifyToken = require('../libs/verifyToken');
 const moment = require("moment");
 
-// 트레이너가 회원의 체크리스트 추가
-router.put('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
+// 회원이 프리미엄 신청
+router.post('/apply/:id', verifyToken, async (req, res, next) => {
+  console.log(req.body);
   let data = {
-    trainerComment: req.body.trainerComment,
+    user: req.userId,
+    trainer: req.params.id,
+    createdAt: Date.now()
+  };
+
+  try {
+    let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
+    let result = trainer.premiumUser.indexOf(req.userId);
+    if (result >= 0) {
+      return res
+        .status(200)
+        .json({ status: 409, message: "이미 수강 신청을 하였습니다." });
+    }
+
+    let premium = await new PremiumModel(data);
+    await premium.save();
+    console.log("premium._id", premium._id);
+
+    await TrainerModel.update(
+      { _id: req.params.id },
+      { $push: { premiumUser: req.userId, premium: premium._id } }
+    );
+    
+    await UsersModel.update(
+      { _id: req.userId },
+      { $push: { premiumTrainer: req.params.id, premium: premium._id} }
+    );
+
+    res.status(200).json({ message: "success", premiumId: premium._id });
+  } catch (err) {
+    return res.status(500).json({ error: true, message: err.message });
+  }
+});
+
+/*
+ * 트레이너 회원 관리 > 회원 리스트
+ * TrainerModel 트레이너 정보 제공
+ */
+router.get("/userlist/:id", async (req, res) => {
+  try {
+    // const count = await TrainerModel.find().count();
+    // console.log("count", count);
+    // console.log("limit", limit);
+    // console.log("page", page);
+    const trainer = await TrainerModel.findOne({ _id: req.params.id })
+      // .populate({ 
+      //   path: "premium",
+      //   populate: { path: "user", select: "profileImages username age gender"}
+      // })
+      .populate("premiumUser", "profileImages username age gender")
+      .sort({ createdAt: -1 })
+      .exec();
+    let data = trainer.premiumUser;
+
+    console.log("data > ", data);
+
+    res.status(200).json({ status: 200, data, success: true });
+  } catch (err) {
+    res.status(500).json({ error: true, message: err });
+  }
+});
+
+// 트레이너가 회원의 체크리스트 추가
+router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
+  let data = {
     workoutlist: req.body.workoutlist,
-    date: Date.now()
+    date: req.body.date
   };
   console.log(req.body);
   // console.log("req.body.workoutlist",req.body.workoutlist);
   try {
     // console.log(data)
-    await UsersModel.update(
+    await PremiumModel.update(
       { _id: req.params.id },
       { $push: { checklist: { $each: [data] } } }
     ).exec();

@@ -1,10 +1,24 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema;
+// const autoIncrement = require("mongoose-auto-increment-fix");
+
 const UsersSchema = new Schema({
     username: {
         type: String,
         require: true
     },
+    premiumTrainer: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "trainer",
+        },
+      ],
+    premium: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "premium",
+        }
+    ],
     email: {
         type: String,
         require: true
@@ -24,19 +38,24 @@ const UsersSchema = new Schema({
     gender: {
         type: String,
         default: "",
-      },
+    },
+    profile: {
+        type: String,
+        default: ""
+    },
     createdAt: { 
         type: Date, 
         default: Date.now 
-      },
+    },
     type: {
         type: String,
         default: "1", // '1' 일반유러, '2' 트레이너
-      },
-    trainer: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "trainer",
-      },
+    },
+    profileImages: {
+        //유저 이미지
+        type: String,
+        default: "",
+    },
     checklist: [
         {
             trainerComment: {
@@ -112,12 +131,11 @@ const UsersSchema = new Schema({
         }
     ]
     
-
-
-         
-
 })
 
-
-
-module.exports = mongoose.model('User', UsersSchema)
+// UsersSchema.plugin(autoIncrement.plugin, {
+//     model: "users",
+//     field: "id",
+//     startAt: 1,
+// });
+module.exports = mongoose.model('users', UsersSchema)
