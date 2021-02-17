@@ -85,6 +85,13 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   console.log(req.body);
   // console.log("req.body.workoutlist",req.body.workoutlist);
   try {
+    let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
+    let result = trainer.premiumUser.indexOf(req.userId);
+    if (result >= 0) {
+      return res
+        .status(200)
+        .json({ status: 409, message: "이미 수강 신청을 하였습니다." });
+    }
     // console.log(data)
     await PremiumModel.update(
       { _id: req.params.id },
@@ -99,18 +106,6 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
 
 // 트레이너가 회원의 체크리스트 수정(추가, 삭제)
 router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
-  let result = await (await PremiumModel.findOne({ _id: req.params.id})).exec();
-
-  result.checklist.map((item) => {
-    let selectDate = moment(req.body.selectDate).format("YYYY-MM-DD");
-    let date = moment(item.date).format("YYYY-MM-DD");
-
-    if(selectDate === date) {
-      
-    }
-    
-  })
-  
   let data = {
     workoutlist: req.body.workoutlist,
     date: req.body.date
@@ -120,7 +115,7 @@ router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
   try {
     // console.log(data)
     await PremiumModel.update(
-      { _id: req.params.id, },
+      { _id: req.params.id, "checklist.date": req.body.date },
       { $set: { checklist: data } }
     ).exec();
     return res.status(200).json({ status: 200, message: "success" })
@@ -129,6 +124,25 @@ router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
     return res.status(500).json({ error: true, message: err })
   }
 });
+
+//트레이너 코멘트 작성
+router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
+  let data = {
+    comment: req.body.comment,
+    date: req.body.date
+  }
+
+  try {
+    await PremiumModel.update(
+      { _id: req.params.id },
+      { $push: { trainerComment: { $each: [data] } } }
+    ).exec();
+    return res.status(200).json({ status: 200, message: "success" })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: true, message: err })
+  }
+})
 
 // 회원 체크리스트 출력
 router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {

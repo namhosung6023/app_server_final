@@ -9,10 +9,18 @@ const PremiumSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "trainer",
       },
-    trainerComment: {
-      type: String,
-      default: "",
-    },
+    trainerComment: [
+      {
+        comment: {
+          type: String,
+          default: "",
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        }
+      }
+    ],
     checklist: [
       {
         workoutlist: [
