@@ -39,7 +39,17 @@ router.post('/join', async (req, res, next) => {
           }
         });
 
-        jsonWebToken = jwt.sign(userInfo, JWT_SecretKey, {
+        let user = UsersModel.findOne(
+            {email: req.body.email,
+            password: req.body.password,}
+        ).exec();
+
+        let tokenInfo = {
+          _id: user._id,
+          email: user.email,
+        }
+
+        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
           expiresIn: "300d",
         });
 

@@ -85,6 +85,13 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   console.log(req.body);
   // console.log("req.body.workoutlist",req.body.workoutlist);
   try {
+    let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
+    let result = trainer.premiumUser.indexOf(req.userId);
+    if (result >= 0) {
+      return res
+        .status(200)
+        .json({ status: 409, message: "이미 수강 신청을 하였습니다." });
+    }
     // console.log(data)
     await PremiumModel.update(
       { _id: req.params.id },
