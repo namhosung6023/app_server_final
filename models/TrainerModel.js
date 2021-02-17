@@ -71,16 +71,22 @@ let TrainerSchema = new Schema({
   trainerIntro: "",
   premiumUser: [
     {
-      user: {
+      user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
       },
       premium: {
         type: mongoose.Schema.Types.ObjectId,
-      ref: "premium",
+        ref: "premium",
       },
     },
   ],
+  // premium: [
+  //   {
+  //     type: mongoose.Schema.Types.ObjectId,
+  //     ref: "premium",
+  //   }
+  // ],
   isConsulting: { //온라인상담 동의 여부
     type: Boolean,
     default: false,

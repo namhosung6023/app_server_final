@@ -59,7 +59,11 @@ router.get("/userlist/:id", async (req, res) => {
       //   path: "premium",
       //   populate: { path: "user", select: "profileImages username age gender"}
       // })
-      .populate("premiumUser", "profileImages username age gender")
+
+      .populate({ 
+        path: "premiumUser",
+        populate: { path: "user premium", select: "profileImages username age gender createdAt"}
+      })
       .sort({ createdAt: -1 })
       .exec();
     let data = trainer.premiumUser;
@@ -85,6 +89,39 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
     await PremiumModel.update(
       { _id: req.params.id },
       { $push: { checklist: { $each: [data] } } }
+    ).exec();
+    return res.status(200).json({ status: 200, message: "success" })
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: true, message: err })
+  }
+});
+
+// 트레이너가 회원의 체크리스트 수정(추가, 삭제)
+router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
+  let result = await (await PremiumModel.findOne({ _id: req.params.id})).exec();
+
+  result.checklist.map((item) => {
+    let selectDate = moment(req.body.selectDate).format("YYYY-MM-DD");
+    let date = moment(item.date).format("YYYY-MM-DD");
+
+    if(selectDate === date) {
+      
+    }
+    
+  })
+  
+  let data = {
+    workoutlist: req.body.workoutlist,
+    date: req.body.date
+  };
+  console.log(req.body);
+  // console.log("req.body.workoutlist",req.body.workoutlist);
+  try {
+    // console.log(data)
+    await PremiumModel.update(
+      { _id: req.params.id, },
+      { $set: { checklist: data } }
     ).exec();
     return res.status(200).json({ status: 200, message: "success" })
   } catch (err) {
