@@ -298,8 +298,10 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
     }
     else {
       console.log('검색결과 있으면 실행');
-      if(weightNumber === 0) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, { $push: { "morningWeight": req.body.morningWeight}});
-      else if (weightNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, { $push: {"nightWeight": req.body.nightWeight}});
+      if(weightNumber === 0) {
+         await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, { $set :{ "bodyLog.$[].morningWeight" : req.body.morningWeight}},
+      {new : true}).exec(); }
+      else if (weightNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, {$set :  {"bodyLog.$[].nightWeight": req.body.nightWeight}});
     }
     return res.json({"success": true});
 
@@ -308,5 +310,51 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
     console.log(`mongoDB err : ${err.message}`);
   }
 });
+
+// 음식 타이틀 몽고DB에 저장하는 서버
+router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
+  const foodTitleNumber = req.body.foodTitleNumber;
+  require('moment-timezone');
+  moment.tz.setDefault("Asia/Seoul");
+  const startDate = moment(req.body.date, 'YYYY-MM-DD');
+  const endDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
+  const filter = {_id: req.userId, "bodyLog.date": {"$gte": startDate, "$lt": endDate}};
+  const morningFoodTitle = req.body.morningFoodTitle;  
+  const afternoonFoodTitle = req.body.afternoonFoodTitle;
+  const nightFoodTitle = req.body.nightFoodTitle;
+  const snackTitle = req.body.snackTitle;
+  console.log('-------------------------------------------------------------------------------------------------------------------------');
+  console.log(req.userId);
+  console.log(req.body.morningFoodTitle);
+  console.log(req.body.afternoonFoodTitle);
+  console.log(req.body.nightFoodTitle);
+  console.log(req.body.snackTitle);
+  console.log('-------------------------------------------------------------------------------------------------------------------------');
+  try {
+    const result = await UsersModel.findOne(filter);
+    if(!result) {
+      console.log('날짜가 없으면 실행');
+
+      if (foodTitleNumber === 0) await UsersModel.findOneAndUpdate({_id: req.userId}, {$push:{"bodyLog": {"morningFoodTitle": req.body.morningFoodTitle, "date" : startDate}}});
+      else if(foodTitleNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"afternoonFoodTitle": req.body.afternoonFoodTitle, "date": startDate}}});
+    else if(foodTitleNumber === 2) await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"nightFoodTitle": req.body.nightFoodTitle, "date": startDate}}});
+    else  await UsersModel.findOneAndUpdate({_id: req.userId}, {$push: {"bodyLog": {"snackTitle": req.body.snackTitle, "date": startDate}}});
+    }
+    else {
+      console.log('날짜가 있으면 실행');
+      if(foodTitleNumber === 0) { await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, { $set :{ "bodyLog.$[].morningFoodTitle" : req.body.morningFoodTitle}},
+      {new : true}).exec(); }
+      else if (foodTitleNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, {$set :  {"bodyLog.$[].afternoonFoodTitle": req.body.afternoonFoodTitle}});
+      else if (foodTitleNumber === 2) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, {$set :  {"bodyLog.$[].nightFoodTitle": req.body.nightFoodTitle}});
+      else  await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, {$set :  {"bodyLog.$[].snackTitle": req.body.snackTitle}});
+    }
+    return res.json({"success": true});
+
+
+  } catch (err){
+    console.log(`mongoDB err : ${err.message}`);
+  }
+});
+
 
 module.exports = router
