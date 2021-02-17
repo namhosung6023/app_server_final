@@ -11,35 +11,44 @@ router.post('/join', async (req, res, next) => {
         console.log(req.body);
         return res.json({success: false, message: '모두 필수 입력란 입니다.'});
     }
+
+    let jsonWebToken;
+
     UsersModel.findOne({ email: req.body.email }, (err, user) => {
-        if(err) {
-            return res.status(500).json({ success: false, message: "Server error" });
-        } else if (user) {
-            console.log("이미 회원 가입 하였습니다.");
-            return res.status(200).json({
-                status: 409,
-                success: false,
-                message: "이미 회원 가입 하였습니다.",
-              });
-        }else{
-            let userInfo = new UsersModel({
-                email: req.body.email,
-                loginType: "EMAIL",
-                password: req.body.password,
-                username: req.body.username,
-              });
-        
-              userInfo.save((err) => {
-                if(err){
-                    return res.json({success: false, message: 'mongodb저장 실패'});
-                    console.log(err);
-                }
-            });
-              return res.status(200).json({
-                success: true,
-                message: "회원가입을 진심으로 감사드립니다.",
-              });
-        }
+      if(err) {
+        return res.status(500).json({ success: false, message: "Server error" });
+      } else if (user) {
+        console.log("이미 회원 가입 하였습니다.");
+        return res.status(200).json({
+          status: 409,
+          success: false,
+          message: "이미 회원 가입 하였습니다.",
+        });
+      }else{
+        let userInfo = new UsersModel({
+            email: req.body.email,
+            loginType: "EMAIL",
+            password: req.body.password,
+            username: req.body.username,
+        });
+  
+        userInfo.save((err) => {
+          if(err){
+              return res.json({success: false, message: 'mongodb저장 실패'});
+              console.log(err);
+          }
+        });
+
+        jsonWebToken = jwt.sign(userInfo, JWT_SecretKey, {
+          expiresIn: "300d",
+        });
+
+        return res.status(200).json({
+          success: true,
+          message: "회원가입을 진심으로 감사드립니다.",
+          accesstoken: jsonWebToken
+        });
+      }
     });
 })
 
