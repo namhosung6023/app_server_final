@@ -40,8 +40,8 @@ router.post('/join', async (req, res, next) => {
         });
 
         let user = UsersModel.findOne(
-            {email: req.body.email,
-            password: req.body.password,}
+          {email: req.body.email,
+          password: req.body.password,}
         ).exec();
 
         let tokenInfo = {
@@ -49,7 +49,7 @@ router.post('/join', async (req, res, next) => {
           email: user.email,
         }
 
-        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
+        jsonWebToken = jwt.sign(userInfo, JWT_SecretKey, {
           expiresIn: "300d",
         });
 
