@@ -247,8 +247,10 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
     }
     else {
       console.log('검색결과 있으면 실행');
-      if(weightNumber === 0) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, { $push: { "morningWeight": req.body.morningWeight}});
-      else if (weightNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, { $push: {"nightWeight": req.body.nightWeight}});
+      if(weightNumber === 0) {
+        let data = await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte": startDate, "$lt": endDate}}, { $set :{ "bodyLog.$[].morningWeight" : req.body.morningWeight}},
+      {new : true}).exec(); console.log(data);}
+      else if (weightNumber === 1) await UsersModel.findOneAndUpdate({_id: req.userId, "bodyLog.date" : {"$gte" : startDate, "$lt": endDate}}, {$set :  {"bodyLog.$[].nightWeight": req.body.nightWeight}});
     }
     return res.json({"success": true});
 
