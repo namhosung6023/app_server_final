@@ -3,6 +3,7 @@ const router = express.Router();
 const UsersModel = require('../models/UsersModel');
 const TrainerModel = require('../models/TrainerModel');
 const PremiumModel = require('../models/PremiumModel');
+const HistoryModel = require('../models/HistoryModel');
 const verifyToken = require('../libs/verifyToken');
 const moment = require("moment");
 
@@ -35,12 +36,12 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
 
     await TrainerModel.update(
       { _id: req.params.id },
-      { $push: {premiumUser: { $each: [trainerData] } } }
+      { $push: {premiumUser: { $each: [trainerData] } }}
     );
     
     await UsersModel.update(
       { _id: req.userId },
-      { $push: { premiumTrainer: req.params.id, premium: premium._id} }
+      { $push: { premiumTrainer: { $each: [trainerData] } }}
     );
 
     res.status(200).json({ message: "success", premiumId: premium._id });
@@ -290,6 +291,7 @@ router.put('/checklist/user/checkbox/:id', verifyToken, async (req, res, next) =
   );
 })
 
+// 유저 코멘트 
 router.post('/comment/user/:id', verifyToken, async (req, res, next) =>{
   console.log(req.body);
   await UsersModel.update(

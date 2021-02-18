@@ -8,6 +8,7 @@ const routes = require('./routes/index')
 const accounts = require('./routes/accounts')
 const trainer = require("./routes/trainer");
 const premium = require('./routes/premium')
+const history = require('./routes/history')
 const file = require('./routes/file')
 
 connectDB()
@@ -24,6 +25,7 @@ app.use(bodyParser.json())
 app.use("/accounts", accounts)
 app.use("/trainer", trainer);
 app.use("/premium", premium)
+app.use("/history", history)
 app.use("/file", file)
 //app.use(passport.initialize())
 //require('./config/passport')(passport)

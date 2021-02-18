@@ -81,6 +81,10 @@ let TrainerSchema = new Schema({
       },
     },
   ],
+  history: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "history",
+  },
   // premium: [
   //   {
   //     type: mongoose.Schema.Types.ObjectId,

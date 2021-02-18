@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const UsersModel = require('../models/UsersModel');
+const HistoryModel = require('../models/HistoryModel');
 const { request } = require('express');
 const jwt = require('jsonwebtoken');
 const { JWT_SecretKey } = require('../config/env.js');
@@ -39,24 +40,36 @@ router.post('/join', async (req, res, next) => {
           }
         });
 
+        
         let user = UsersModel.findOne(
-          {email: req.body.email,
-          password: req.body.password,}
+          {
+            email: req.body.email,
+            password: req.body.password
+          }
         ).exec();
+            
+          let tokenInfo = {
+            _id: user._id,
+            email: user.email,
+          }
+          
+          jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
+            expiresIn: "300d",
+          });
 
-        let tokenInfo = {
-          _id: user._id,
-          email: user.email,
-        }
+          let historyData = {
+            user: user._id
+          }
 
-        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
-          expiresIn: "300d",
-        });
-
-        return res.status(200).json({
+          let history = new HistoryModel(historyData);
+          history.save();
+          console.log("history._id", history._id);
+          
+          return res.status(200).json({
           success: true,
           message: "회원가입을 진심으로 감사드립니다.",
-          accesstoken: jsonWebToken
+          accesstoken: jsonWebToken,
+          historyId: history._id
         });
       }
     });

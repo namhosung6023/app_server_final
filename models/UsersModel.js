@@ -9,16 +9,20 @@ const UsersSchema = new Schema({
     },
     premiumTrainer: [
         {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "trainer",
+            trainer:{
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "trainer",
+            },
+            premium: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "premium",
+            },
         },
       ],
-    premium: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "premium",
-        }
-    ],
+    history: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "history",
+    },
     email: {
         type: String,
         require: true
