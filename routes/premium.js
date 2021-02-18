@@ -28,9 +28,14 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
     await premium.save();
     console.log("premium._id", premium._id);
 
+    let trainerData = {
+      user: req.userId,
+      premium: premium._id
+    }
+
     await TrainerModel.update(
       { _id: req.params.id },
-      { $push: { premiumUser: req.userId, premium: premium._id } }
+      { $push: {premiumUser: { $each: [trainerData] } } }
     );
     
     await UsersModel.update(
@@ -82,17 +87,18 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
     workoutlist: req.body.workoutlist,
     date: req.body.date
   };
-  console.log(req.body.date);
-  // console.log("req.body.workoutlist",req.body.workoutlist);
+  console.log(req.body);
+
+  selectDate = moment(req.body.date).format("YYYY-MM-DD");
+  endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
+
   try {
-    let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
-    let result = trainer.premiumUser.indexOf(req.userId);
-    if (result >= 0) {
-      return res
-        .status(200)
-        .json({ status: 409, message: "이미 수강 신청을 하였습니다." });
+    let premium = await PremiumModel.findOne({ _id: req.params.id, "checklist.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
+    if (premium) {
+      console.log("이미 존재함");
+      return res.status(500).json({ success: false, message: "이미 존재함" })
     }
-    // console.log(data)
+    
     await PremiumModel.update(
       { _id: req.params.id },
       { $push: { checklist: { $each: [data] } } }
@@ -132,7 +138,16 @@ router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
     date: req.body.date
   }
 
+  selectDate = moment(req.body.date).format("YYYY-MM-DD");
+  endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
+
   try {
+    let premium = await PremiumModel.findOne({ _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
+    if (premium) {
+      console.log("이미 존재함");
+      return res.status(500).json({ success: false, message: "이미 존재함" })
+    }
+
     await PremiumModel.update(
       { _id: req.params.id },
       { $push: { trainerComment: { $each: [data] } } }
@@ -143,6 +158,76 @@ router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
     return res.status(500).json({ error: true, message: err })
   }
 })
+
+//트레이너 코멘트 수정(추가, 삭제)
+router.put('/comment/update/:id', verifyToken, async (req, res, next) => {
+  let data = {
+    comment: req.body.comment,
+    date: req.body.date
+  }
+
+  require('moment-timezone');
+  moment.tz.setDefault("Asia/Seoul");
+  const selectDate = moment(req.body.date, "YYYY-MM-DD");
+  const endDate = moment(selectDate,  "YYYY-MM-DD" ).add(1, 'days');
+  console.log(selectDate);
+  console.log(endDate);
+
+  try {
+    let premium = await PremiumModel.findOne({ _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
+    if (!premium) {
+      return res.status(500).json({ success: false, message: "존재하지않음" })
+    }else {
+      // 코멘트 삭제
+      if(req.body.comment.length <= 0) {
+        await PremiumModel.update(
+          { _id: req.params.id },
+          { $pull: {trainerComment: { date :{"$gte": selectDate, "$lt": endDate}} } }
+        ).exec();
+        return res.status(200).json({ status: 200, success: true, message: "delete" })
+      }else { // 코멘트 수정
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate} },
+          { $set: { trainerComment: { $each: [data] } } }
+        );
+        return res.status(200).json({ status: 200, success: true, message: "success" })
+      }
+      // await PremiumModel.update(
+      //   { _id: req.params.id },
+      //   { $push: { trainerComment: { $each: [data] } } }
+      // ).exec();
+      // return res.status(200).json({ status: 200, message: "post" })
+    }
+  
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: true, message: err })
+  }
+})
+
+//트레이너 코멘트 수정(추가, 삭제) ex2
+// router.put('/comment/update/:id', verifyToken, async (req, res, next) => {
+//   try {
+//     let premium = await PremiumModel.find({ _id: req.params.id }).exec();
+    
+//     console.log(premium);
+    
+//     premium.trainerComment.map((item) => {
+//       const selectDate = moment(req.body.date, "YYYY-MM-DD");
+//       const dbDate = moment(item.date,  "YYYY-MM-DD");  
+
+//       if(selectDate === dbDate) {
+
+//       }else {
+
+//       }
+      
+//     })
+    
+//   } catch (err) {
+    
+//   }
+// })
 
 // 회원 체크리스트 출력
 router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
@@ -181,7 +266,7 @@ router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
 
 // 회원 관리일지 출력
 router.get('/bodylog/user/:id',verifyToken, async (req, res, next) => {
-  try {
+  try { 
     let result = await UsersModel.findOne({ _id: req.params.id }).exec();
   
     let bodyLog=[]

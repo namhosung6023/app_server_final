@@ -39,10 +39,6 @@ const UsersSchema = new Schema({
         type: String,
         default: "",
     },
-    profile: {
-        type: String,
-        default: ""
-    },
     createdAt: { 
         type: Date, 
         default: Date.now 

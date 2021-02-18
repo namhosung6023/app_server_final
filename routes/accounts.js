@@ -40,8 +40,8 @@ router.post('/join', async (req, res, next) => {
         });
 
         let user = UsersModel.findOne(
-            {email: req.body.email,
-            password: req.body.password,}
+          {email: req.body.email,
+          password: req.body.password,}
         ).exec();
 
         let tokenInfo = {
@@ -107,6 +107,23 @@ router.post("/login", (req, res) => {
       }
     });
   });
+
+/**
+ * 회원 기본정보 확인
+ */
+
+router.get("/profile", verifyToken, async (req, res) => {
+  console.log("_id", req.userId);
+  try {
+    let data = await UsersModel.findOne({ _id: req.userId }, { password: 0 })
+      .populate("premium")
+      .exec();
+    res.status(200).json({ data });
+  } catch (err) {
+    console.log("err", err);
+    return res.status(500).json({ error: true, message: err.message });
+  }
+});
 
 // 에러 내줌
 router.use((error, req, res, next) => {
