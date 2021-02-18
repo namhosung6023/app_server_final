@@ -49,7 +49,7 @@ router.post('/join', async (req, res, next) => {
           email: user.email,
         }
 
-        jsonWebToken = jwt.sign(userInfo, JWT_SecretKey, {
+        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
           expiresIn: "300d",
         });
 
