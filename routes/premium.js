@@ -188,7 +188,7 @@ router.put('/comment/update/:id', verifyToken, async (req, res, next) => {
       }else { // 코멘트 수정
         await PremiumModel.findOneAndUpdate(
           { _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate} },
-          { $set: { "trainerComment.$[].comment": req.body.comment } }
+          { $set: { trainerComment: { $each: [data] } } }
         );
         return res.status(200).json({ status: 200, success: true, message: "success" })
       }
@@ -204,6 +204,30 @@ router.put('/comment/update/:id', verifyToken, async (req, res, next) => {
     return res.status(500).json({ error: true, message: err })
   }
 })
+
+//트레이너 코멘트 수정(추가, 삭제) ex2
+// router.put('/comment/update/:id', verifyToken, async (req, res, next) => {
+//   try {
+//     let premium = await PremiumModel.find({ _id: req.params.id }).exec();
+    
+//     console.log(premium);
+    
+//     premium.trainerComment.map((item) => {
+//       const selectDate = moment(req.body.date, "YYYY-MM-DD");
+//       const dbDate = moment(item.date,  "YYYY-MM-DD");  
+
+//       if(selectDate === dbDate) {
+
+//       }else {
+
+//       }
+      
+//     })
+    
+//   } catch (err) {
+    
+//   }
+// })
 
 // 회원 체크리스트 출력
 router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
