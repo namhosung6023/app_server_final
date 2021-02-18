@@ -82,7 +82,7 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
     workoutlist: req.body.workoutlist,
     date: req.body.date
   };
-  console.log(req.body);
+  console.log(req.body.date);
   // console.log("req.body.workoutlist",req.body.workoutlist);
   try {
     let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
