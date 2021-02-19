@@ -48,28 +48,20 @@ router.post('/join', async (req, res, next) => {
           }
         ).exec();
             
-          let tokenInfo = {
-            _id: user._id,
-            email: user.email,
-          }
-          
-          jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
-            expiresIn: "300d",
-          });
-
-          let historyData = {
-            user: user._id
-          }
-
-          let history = new HistoryModel(historyData);
-          history.save();
-          console.log("history._id", history._id);
-          
-          return res.status(200).json({
-          success: true,
-          message: "회원가입을 진심으로 감사드립니다.",
-          accesstoken: jsonWebToken,
-          historyId: history._id
+        let tokenInfo = {
+          _id: user._id,
+          email: user.email,
+        }
+        
+        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
+          expiresIn: "300d",
+        });
+        
+        return res.status(200).json({
+        success: true,
+        message: "회원가입을 진심으로 감사드립니다.",
+        accesstoken: jsonWebToken,
+        historyId: history._id
         });
       }
     });

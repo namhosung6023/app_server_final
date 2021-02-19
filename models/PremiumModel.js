@@ -17,6 +17,9 @@ const PremiumSchema = new Schema({
         },
         date: {
           type: Date,
+        },
+        createdAt: {
+          type: Date
         }
       }
     ],

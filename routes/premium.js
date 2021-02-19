@@ -132,45 +132,43 @@ router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
   }
 });
 
-//트레이너 코멘트 작성
-router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
-  let data = {
-    comment: req.body.comment,
-    date: req.body.date
-  }
+// //트레이너 코멘트 작성
+// router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
+//   let data = {
+//     comment: req.body.comment,
+//     date: req.body.date,
+//     createdAt: new Date()
+//   }
 
-  selectDate = moment(req.body.date).format("YYYY-MM-DD");
-  endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
+//   selectDate = moment(req.body.date).format("YYYY-MM-DD");
+//   endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
 
-  try {
-    let premium = await PremiumModel.findOne({ _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
-    if (premium) {
-      console.log("이미 존재함");
-      return res.status(500).json({ success: false, message: "이미 존재함" })
-    }
+//   try {
+//     let premium = await PremiumModel.findOne({ _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
+//     if (premium) {
+//       console.log("이미 존재함");
+//       return res.status(500).json({ success: false, message: "이미 존재함" })
+//     }
 
-    await PremiumModel.update(
-      { _id: req.params.id },
-      { $push: { trainerComment: { $each: [data] } } }
-    ).exec();
-    return res.status(200).json({ status: 200, message: "success" })
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: true, message: err })
-  }
-})
+//     await PremiumModel.update(
+//       { _id: req.params.id },
+//       { $push: { trainerComment: { $each: [data] } } }
+//     ).exec();
+//     return res.status(200).json({ status: 200, message: "success" })
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).json({ error: true, message: err })
+//   }
+// })
 
 //트레이너 코멘트 수정(추가, 삭제)
 router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
   let data = {
     comment: req.body.comment,
-    date: req.body.date
+    date: req.body.date,
+    createdAt: new Date()
   }
-    
-  // trainerComment = req.body.trainerComment
 
-  require('moment-timezone');
-  moment.tz.setDefault("Asia/Seoul");
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
   // const selectDate = moment(req.body.date, "YYYY-MM-DD");
@@ -197,7 +195,8 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
       }else { // 코멘트 수정
         await PremiumModel.updateOne(
           { _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lte": endDate} },
-          { $set: { "trainerComment.$.comment": data.comment }}
+          // { $set: { trainerComment : data }}
+          { $set: { "trainerComment.$.comment": data.comment, "trainerComment.$.createdAt": data.createdAt }}
         ).exec();
         return res.status(200).json({ status: 200, success: true, message: "update" })
       }
@@ -208,6 +207,37 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
     return res.status(500).json({ error: true, message: err })
   }
 })
+
+// 코멘트 보기 (회원)
+router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
+  try {
+    let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
+
+    let comment=[]
+    result.trainerComment.map((item) => {
+      let date = moment(item.date).format('YYYY-MM-DD');
+      let selectDate = moment(req.query.date).format('YYYY-MM-DD');
+      // console.log(date);
+
+      if(date === selectDate){
+        comment.push(item)
+      }
+  
+    })
+
+    // console.log(checklist);
+    if(comment){
+      return res.json({ comment: comment , success: true});
+    } else{
+      return res.json({ comment: comment , success: false })
+    }
+  
+
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({error: true, message: err.message})
+  }
+});
 
 // 회원 체크리스트 출력
 router.get('/checklist/user/:id',verifyToken, async (req, res, next) => {
