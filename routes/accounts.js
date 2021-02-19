@@ -15,7 +15,7 @@ router.post('/join', async (req, res, next) => {
 
     let jsonWebToken;
 
-    UsersModel.findOne({ email: req.body.email }, (err, user) => {
+    UsersModel.findOne({ email: req.body.email }, async (err, user) => {
       if(err) {
         return res.status(500).json({ success: false, message: "Server error" });
       } else if (user) {
@@ -33,36 +33,32 @@ router.post('/join', async (req, res, next) => {
             username: req.body.username,
         });
   
-        userInfo.save((err) => {
+        await userInfo.save((err) => {
           if(err){
               return res.json({success: false, message: 'mongodb저장 실패'});
               console.log(err);
           }
         });
-
-        
-        let user = UsersModel.findOne(
-          {
-            email: req.body.email,
-            password: req.body.password
+        let tokenInfo;
+        UsersModel.findOne({ email: req.body.email }, async (err, user) => {
+          if(err) return console.log(err.message);
+          console.log(user);
+          tokenInfo = {
+            _id: user._id,
+            email: user.email,
           }
-        ).exec();
-            
-        let tokenInfo = {
-          _id: user._id,
-          email: user.email,
-        }
-        
-        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
-          expiresIn: "300d",
+          console.log(tokenInfo);
+          jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
+            expiresIn: "300d",
+          });
+          
+          return res.status(200).json({
+          success: true,
+          message: "회원가입을 진심으로 감사드립니다.",
+          accesstoken: jsonWebToken
+          });
         });
         
-        return res.status(200).json({
-        success: true,
-        message: "회원가입을 진심으로 감사드립니다.",
-        accesstoken: jsonWebToken,
-        historyId: history._id
-        });
       }
     });
 })

@@ -10,8 +10,9 @@ const moment = require("moment");
 // 알람디비 추가(유저 1 = 알람디비 1)
 router.post('/register', verifyToken, async (req, res, next) => {
   let historyData = {
-    user: user._id
+    user: req.userId
   }
+  console.log(historyData);
 
   try {
     let history = await new HistoryModel(historyData);

@@ -90,47 +90,56 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   };
   console.log(req.body);
 
-  selectDate = moment(req.body.date).format("YYYY-MM-DD");
-  endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
+  const selectDate = moment(data.date).startOf('day');
+  const endDate = moment(data.date).endOf('day');
+  // selectDate = moment(req.body.date).format("YYYY-MM-DD");
+  // endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
+  console.log(selectDate);
+  console.log(endDate);
 
   try {
-    let premium = await PremiumModel.findOne({ _id: req.params.id, "checklist.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
+    let premium = await PremiumModel.findOne({ _id: req.params.id, "checklist.date":  {"$gte": selectDate, "$lte": endDate}}).exec();
     if (premium) {
-      console.log("이미 존재함");
-      return res.status(500).json({ success: false, message: "이미 존재함" })
+      await PremiumModel.updateOne(
+        { _id: req.params.id, "checklist.date":  {"$gte": selectDate, "$lte": endDate} },
+        { $set: { "checklist.$.workoutlist": data.workoutlist } }
+      ).exec();
+
+      return res.status(200).json({ status: 200, message: "update" })
+    }else {
+      await PremiumModel.update(
+        { _id: req.params.id },
+        { $push: { checklist: { $each: [data] } } }
+      ).exec(); 
+
+      return res.status(200).json({ status: 20, message: "post" })
     }
-    
-    await PremiumModel.update(
-      { _id: req.params.id },
-      { $push: { checklist: { $each: [data] } } }
-    ).exec();
-    return res.status(200).json({ status: 200, message: "success" })
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: true, message: err })
   }
 });
 
-// 트레이너가 회원의 체크리스트 수정(추가, 삭제)
-router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
-  let data = {
-    workoutlist: req.body.workoutlist,
-    date: req.body.date
-  };
-  console.log(req.body);
-  // console.log("req.body.workoutlist",req.body.workoutlist);
-  try {
-    // console.log(data)
-    await PremiumModel.update(
-      { _id: req.params.id, "checklist.date": req.body.date },
-      { $set: { checklist: data } }
-    ).exec();
-    return res.status(200).json({ status: 200, message: "success" })
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: true, message: err })
-  }
-});
+// // 트레이너가 회원의 체크리스트 수정(추가, 삭제)
+// router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
+//   let data = {
+//     workoutlist: req.body.workoutlist,
+//     date: req.body.date
+//   };
+//   console.log(req.body);
+//   // console.log("req.body.workoutlist",req.body.workoutlist);
+//   try {
+//     // console.log(data)
+//     await PremiumModel.update(
+//       { _id: req.params.id, "checklist.date": req.body.date },
+//       { $set: { checklist: data } }
+//     ).exec();
+//     return res.status(200).json({ status: 200, message: "success" })
+//   } catch (err) {
+//     console.log(err);
+//     return res.status(500).json({ error: true, message: err })
+//   }
+// });
 
 // //트레이너 코멘트 작성
 // router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
