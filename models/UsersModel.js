@@ -7,6 +7,10 @@ const UsersSchema = new Schema({
         type: String,
         require: true
     },
+    history: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "history",
+    },
     premiumTrainer: [
         {
             trainer:{
@@ -18,11 +22,7 @@ const UsersSchema = new Schema({
                 ref: "premium",
             },
         },
-      ],
-    history: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "history",
-    },
+    ],
     email: {
         type: String,
         require: true

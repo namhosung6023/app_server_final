@@ -9,26 +9,37 @@ const moment = require("moment");
 
 // 알람디비 추가(유저 1 = 알람디비 1)
 router.post('/register', verifyToken, async (req, res, next) => {
-  let historyData = {
-    user: req.userId
-  }
-  console.log(historyData);
+  console.log(req.userId);
 
   try {
-    let history = await new HistoryModel(historyData);
-    awaithistory.save();
+    let user = await HistoryModel.findOne({ user: req.userId }).exec();
+    if(user) {
+      return res.status(409).json({ success: false, message: "알람디비 있음", })
+    }
+    let history = await new HistoryModel({ user: req.userId });
+    await history.save();
     console.log("history._id", history._id);
   
     await UsersModel.update(
-      { _id: user._id },
-      { $push: { history: history._id }}
+      { _id: req.userId },
+      { history: history._id }
     );
+
+    return res.status(500).json({ success: true, message: "알람디비 생성" });
   } catch (err) {
     return res.status(500).json({ success: false, error: true, message: err.message });
   }
-
 })
 
+// 알람 불러오기
+router.get('/', verifyToken, async (req, res, next) => {
+  try {
+    let history = await HistoryModel.findOne({ user: req.userId }).exec();
+    
 
+  } catch (err) {
+    return res.status(500).json({ success: false, error: true, message: err.message });
+  }
+})
 
 module.exports = router

@@ -17,11 +17,14 @@ const HistorySchema = new Schema({
           type: String,
           default: ""
         },
+        date: {
+          type: Date
+        },
         isCheck: { 
           type: String,
           default: ""
         },
-        date: { 
+        createdAt: { 
           type: Date, 
           default: Date.now 
         }

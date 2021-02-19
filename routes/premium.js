@@ -105,6 +105,22 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
         { $set: { "checklist.$.workoutlist": data.workoutlist } }
       ).exec();
 
+      // 알람 추가
+      let user = await PremiumModel.findOne({ _id: req.params.id }).populate("user").exec();
+      let historyId = user.history;
+      console.log(historyId);
+
+      let history = {
+        content: 10,
+        date: req.body.date,
+        isCheck: false,
+      }
+
+      await HistoryModel.update(
+        { _id: historyId },
+        { $push: { history: { $each: [history] } } }
+      )
+
       return res.status(200).json({ status: 200, message: "update" })
     }else {
       await PremiumModel.update(
