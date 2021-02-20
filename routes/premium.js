@@ -88,7 +88,7 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
     workoutlist: req.body.workoutlist,
     date: req.body.date
   };
-  console.log(req.body);
+  console.log(req.body.date);
 
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
@@ -100,6 +100,7 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   try {
     let premium = await PremiumModel.findOne({ _id: req.params.id, "checklist.date":  {"$gte": selectDate, "$lte": endDate}}).exec();
     if (premium) {
+      console.log('찾음');
       await PremiumModel.updateOne(
         { _id: req.params.id, "checklist.date":  {"$gte": selectDate, "$lte": endDate} },
         { $set: { "checklist.$.workoutlist": data.workoutlist } }
@@ -123,6 +124,7 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
 
       return res.status(200).json({ status: 200, message: "update" })
     }else {
+      console.log('못찾음');
       await PremiumModel.update(
         { _id: req.params.id },
         { $push: { checklist: { $each: [data] } } }
@@ -193,6 +195,8 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
     date: req.body.date,
     createdAt: new Date()
   }
+  console.log(req.body.comment);
+  console.log(req.body.date);
 
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
@@ -204,6 +208,7 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
   try {
     let premium = await PremiumModel.findOne({ _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lte": endDate}}).exec();
     if (!premium) {
+      console.log('코멘트 날짜를 찾지 못함');
       await PremiumModel.update(
         { _id: req.params.id },
         { $push: { trainerComment: { $each: [data] } } }
@@ -218,10 +223,11 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
         ).exec();
         return res.status(200).json({ status: 200, success: true, message: "delete" })
       }else { // 코멘트 수정
+        console.log('여기서 실행');
         await PremiumModel.updateOne(
           { _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lte": endDate} },
           // { $set: { trainerComment : data }}
-          { $set: { "trainerComment.$.comment": data.comment, "trainerComment.$.createdAt": data.createdAt }}
+          { $set: { "trainerComment.$[].comment": data.comment, "trainerComment.$[].createdAt": data.createdAt }}
         ).exec();
         return res.status(200).json({ status: 200, success: true, message: "update" })
       }
