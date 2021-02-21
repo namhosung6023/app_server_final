@@ -1,11 +1,9 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.send('Hello World')
-})
-
-
+  res.send('Hello World');
+});
 
 // @desc Adding new user
 //@route POST /adduser
@@ -19,4 +17,4 @@ router.get('/', (req, res) => {
 // //@route GET /getinfo
 // router.get('/getinfo', actions.getinfo)
 
-module.exports = router
+module.exports = router;

@@ -1,5 +1,5 @@
 {
-    "region": "ap-northeast-2",
-    "IdentityPoolId": "ap-northeast-2:d8bb7edf-554b-40df-8c7d-5cf18defbcbe",
-    "Bucket": "fitwith-s3-app"
+  "region": "ap-northeast-2",
+  "IdentityPoolId": "ap-northeast-2:d8bb7edf-554b-40df-8c7d-5cf18defbcbe",
+  "Bucket": "fitwith-s3-app"
 }

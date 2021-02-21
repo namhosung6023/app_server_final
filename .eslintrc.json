@@ -1,0 +1,20 @@
+{
+  "env": {
+    "browser": false,
+    "node": true
+  },
+  "plugins": ["prettier"],
+  "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "script",
+    "ecmaFeatures": {
+      "jsx": false
+    }
+  },
+  "ignorePatterns": ["node_modules/"],
+  "rules": {    
+    "prettier/prettier": "error",
+    "no-unused-vars": ["error", { "argsIgnorePattern": ["req", "res", "next"] }]
+  }
+}

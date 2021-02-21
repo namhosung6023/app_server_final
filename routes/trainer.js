@@ -8,13 +8,13 @@ const verifyToken = require('../libs/verifyToken');
  * 트레이너 상세정보 입력
  * TrainerModel 트레이너 정보 제공
  */
-router.post("/register", verifyToken, async (req, res) => {
-  console.log("body", req.body);
+router.post('/register', verifyToken, async (req, res) => {
+  console.log('body', req.body);
 
   if (!req.userId) {
     return res
       .status(200)
-      .json({ status: 409, message: "로그인 후 이용해주세요." });
+      .json({ status: 409, message: '로그인 후 이용해주세요.' });
   }
 
   let data = {
@@ -34,7 +34,7 @@ router.post("/register", verifyToken, async (req, res) => {
     licenses: req.body.licenses,
     awards: req.body.awards,
     careers: req.body.careers,
-    status: "HOLD", //HOLD시 일반 유저들이 볼수 없음.관리자 페이지에서 PUBLIC으로 변경 1. HOLD  2.PUBLIC 3.RETURN
+    status: 'HOLD', //HOLD시 일반 유저들이 볼수 없음.관리자 페이지에서 PUBLIC으로 변경 1. HOLD  2.PUBLIC 3.RETURN
     privateLegalAggree: req.body.privateLegalAggree,
   };
   try {
@@ -42,7 +42,7 @@ router.post("/register", verifyToken, async (req, res) => {
     await trainer.save();
     await UsersModel.update(
       { _id: req.userId },
-      { trainer: trainer._id, type: "2" }
+      { trainer: trainer._id, type: '2' }
     );
     res.status(200).json({ status: 200, success: true });
   } catch (err) {
@@ -51,4 +51,4 @@ router.post("/register", verifyToken, async (req, res) => {
   }
 });
 
-module.exports = router
+module.exports = router;

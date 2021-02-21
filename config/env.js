@@ -1,4 +1,3 @@
-  
 module.exports = {
-    "JWT_SecretKey": "secret",
+  JWT_SecretKey: 'secret',
 };

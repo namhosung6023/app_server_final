@@ -1,8 +1,8 @@
-let jwt = require("jsonwebtoken");
-const { JWT_SecretKey } = require("../config/env");
+let jwt = require('jsonwebtoken');
+const { JWT_SecretKey } = require('../config/env');
 
 function verifyToken(req, res, next) {
-  let token = req.headers["accesstoken"];
+  let token = req.headers['accesstoken'];
   /*
  let token;
  let bearerHeader = req.headers['authorization']
@@ -16,13 +16,13 @@ function verifyToken(req, res, next) {
   if (!token)
     return res
       .status(403)
-      .send({ auth: false, message: "아이디와 비밀번호를 다시 확인 하세요" });
+      .send({ auth: false, message: '아이디와 비밀번호를 다시 확인 하세요' });
 
   jwt.verify(token, JWT_SecretKey, function (err, decoded) {
     if (err)
       return res
         .status(500)
-        .send({ auth: false, message: "아이디와 비밀번호를 다시 확인 하세요" });
+        .send({ auth: false, message: '아이디와 비밀번호를 다시 확인 하세요' });
     // console.log("decoded", decoded)
     req.email = decoded.email;
     req.userId = decoded._id;

@@ -1,48 +1,48 @@
-let mongoose = require("mongoose");
+let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 //let autoIncrement = require("mongoose-auto-increment-fix");
 
 let TrainerSchema = new Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+    ref: 'users',
   },
   projects: [
     {
       //내가 등록한 프로젝트
       type: mongoose.Schema.Types.ObjectId,
-      ref: "project",
+      ref: 'project',
     },
   ],
   status: {
     //HOLD시 일반 유저들이 볼수 없음.관리자 페이지에서 PUBLIC으로 변경 1. HOLD  2.PUBLIC 3.RETURN
     type: String,
-    default: "HOLD",
+    default: 'HOLD',
   },
   mainFields: [], //주요 트레이닝 분야
   etcField: {
     //기타 트레이닝 분야
     type: String,
-    default: "",
+    default: '',
   },
   mobileNo: {
     type: String,
-    default: "",
+    default: '',
   },
   address: {
     //활동 지역
     type: String,
-    default: "",
+    default: '',
   },
   detailAddress: {
     //상세 주소
     type: String,
-    default: "",
+    default: '',
   },
   postcode: {
     //활동 지역 우편번호
     type: String,
-    default: "",
+    default: '',
   },
 
   // careers: [],
@@ -68,22 +68,22 @@ let TrainerSchema = new Schema({
   //     },
   //   },
   // ],
-  trainerIntro: "",
+  trainerIntro: '',
   premiumUser: [
     {
-      user:{
+      user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: 'users',
       },
       premium: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "premium",
+        ref: 'premium',
       },
     },
   ],
   history: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "history",
+    ref: 'history',
   },
   // premium: [
   //   {
@@ -91,7 +91,8 @@ let TrainerSchema = new Schema({
   //     ref: "premium",
   //   }
   // ],
-  isConsulting: { //온라인상담 동의 여부
+  isConsulting: {
+    //온라인상담 동의 여부
     type: Boolean,
     default: false,
   },
@@ -101,11 +102,11 @@ let TrainerSchema = new Schema({
   },
   returnReason: {
     type: String,
-    default: "",
+    default: '',
   },
 
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: "" },
+  updatedAt: { type: Date, default: '' },
 });
 
 // TrainerSchema.plugin(autoIncrement.plugin, {
@@ -113,4 +114,4 @@ let TrainerSchema = new Schema({
 //   field: "id",
 //   startAt: 1,
 // });
-module.exports = mongoose.model("trainer", TrainerSchema);
+module.exports = mongoose.model('trainer', TrainerSchema);
