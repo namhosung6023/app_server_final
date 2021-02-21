@@ -321,6 +321,9 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
     });
 
     let data = { checklist, bodyLog };
+    return data
+      ? res.json({ data, success: true })
+      : res.json({ data, success: false });
   } catch (err) {
     return res.status(500).json({ error: true, message: err.message });
   }
