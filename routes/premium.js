@@ -60,17 +60,11 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
  * TrainerModel 트레이너 정보 제공
  */
 router.get('/userlist/:id', async (req, res) => {
-  try {
-    // const count = await TrainerModel.find().count();
-    // console.log("count", count);
-    // console.log("limit", limit);
-    // console.log("page", page);
-    const trainer = await TrainerModel.findOne({ _id: req.params.id })
-      // .populate({
-      //   path: "premium",
-      //   populate: { path: "user", select: "profileImages username age gender"}
-      // })
+  const { page = 1, limit = 5, searchWord } = req.query;
+  console.log('req.query.page', req.query.page);
 
+  try {
+    const trainer = await TrainerModel.findOne({ _id: req.params.id })
       .populate({
         path: 'premiumUser',
         populate: {
@@ -78,13 +72,22 @@ router.get('/userlist/:id', async (req, res) => {
           select: 'profileImages username age gender createdAt',
         },
       })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
       .sort({ createdAt: -1 })
       .exec();
     let data = trainer.premiumUser;
+    let count = trainer.premiumUser.count();
 
     console.log('data > ', data);
 
-    res.status(200).json({ status: 200, data, success: true });
+    res.status(200).json({
+      status: 200,
+      data,
+      totalPages: Math.ceil(count / limit),
+      currentPage: Math.ceil(page),
+      success: true,
+    });
   } catch (err) {
     res.status(500).json({ error: true, message: err });
   }
@@ -100,10 +103,6 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
 
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
-  // selectDate = moment(req.body.date).format("YYYY-MM-DD");
-  // endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
-  console.log(selectDate);
-  console.log(endDate);
 
   try {
     let premium = await PremiumModel.findOne({
@@ -182,56 +181,6 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   }
 });
 
-// // 트레이너가 회원의 체크리스트 수정(추가, 삭제)
-// router.put('/checklist/update/:id', verifyToken, async (req, res, next) => {
-//   let data = {
-//     workoutlist: req.body.workoutlist,
-//     date: req.body.date
-//   };
-//   console.log(req.body);
-//   // console.log("req.body.workoutlist",req.body.workoutlist);
-//   try {
-//     // console.log(data)
-//     await PremiumModel.update(
-//       { _id: req.params.id, "checklist.date": req.body.date },
-//       { $set: { checklist: data } }
-//     ).exec();
-//     return res.status(200).json({ status: 200, message: "success" })
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).json({ error: true, message: err })
-//   }
-// });
-
-// //트레이너 코멘트 작성
-// router.post('/comment/trainer/:id', verifyToken, async (req, res, next) => {
-//   let data = {
-//     comment: req.body.comment,
-//     date: req.body.date,
-//     createdAt: new Date()
-//   }
-
-//   selectDate = moment(req.body.date).format("YYYY-MM-DD");
-//   endDate = moment(req.body.date).add(1, 'days').format("YYYY-MM-DD");
-
-//   try {
-//     let premium = await PremiumModel.findOne({ _id: req.params.id, "trainerComment.date":  {"$gte": selectDate, "$lt": endDate}}).exec();
-//     if (premium) {
-//       console.log("이미 존재함");
-//       return res.status(500).json({ success: false, message: "이미 존재함" })
-//     }
-
-//     await PremiumModel.update(
-//       { _id: req.params.id },
-//       { $push: { trainerComment: { $each: [data] } } }
-//     ).exec();
-//     return res.status(200).json({ status: 200, message: "success" })
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).json({ error: true, message: err })
-//   }
-// })
-
 //트레이너 코멘트 수정(추가, 삭제)
 router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
   let data = {
@@ -244,10 +193,6 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
 
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
-  // const selectDate = moment(req.body.date, "YYYY-MM-DD");
-  // const endDate = moment(selectDate,  "YYYY-MM-DD" ).add(1, 'days');
-  console.log(selectDate);
-  console.log(endDate);
 
   try {
     let premium = await PremiumModel.findOne({
@@ -359,14 +304,12 @@ router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
     result.trainerComment.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
       let selectDate = moment(req.query.date).format('YYYY-MM-DD');
-      // console.log(date);
 
       if (date === selectDate) {
         comment.push(item);
       }
     });
 
-    // console.log(checklist);
     if (comment) {
       return res.json({ comment: comment, success: true });
     } else {
@@ -410,73 +353,13 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
   }
 });
 
-// 회원 체크리스트 출력
-router.get('/checklist/user/:id', verifyToken, async (req, res, next) => {
-  try {
-    let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
-
-    let checklist = [];
-    result.checklist.map((item) => {
-      let date = moment(item.date).format('YYYY-MM-DD');
-      let selectDate = moment(req.query.date).format('YYYY-MM-DD');
-      // console.log(date);
-
-      if (date === selectDate) {
-        checklist.push(item);
-      }
-    });
-
-    let data = {
-      checklist,
-    };
-
-    // console.log(checklist);
-    if (checklist) {
-      return res.json({ checklist: data.checklist, success: true });
-    } else {
-      return res.json({ checklist: data.checklist, success: false });
-    }
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: true, message: err.message });
-  }
-});
-
-// 회원 관리일지 출력
-router.get('/bodylog/user/:id', verifyToken, async (req, res, next) => {
-  try {
-    let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
-
-    let bodyLog = [];
-    result.bodyLog.map((item) => {
-      let date = moment(item.date).format('YYYY-MM-DD');
-      let selectDate = moment(req.body.date).format('YYYY-MM-DD');
-
-      if (date === selectDate) {
-        bodyLog.push(item);
-      } else {
-        res.status(200).json({ success: false });
-      }
-    });
-
-    let data = {
-      bodyLog,
-    };
-
-    res.status(200).json({ bodyLog: data.bodyLog, success: true });
-  } catch (err) {
-    console.log(err);
-    return res.status(500).json({ error: true, message: err.message });
-  }
-});
-
 //체크박스 서버
 router.put(
   '/checklist/user/checkbox/:id',
   verifyToken,
   async (req, res, next) => {
     console.log(req.body);
-    await UsersModel.findOneAndUpdate(
+    await PremiumModel.findOneAndUpdate(
       { _id: req.params.id },
       {
         $set: {

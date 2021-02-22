@@ -33,8 +33,6 @@ router.post('/register', verifyToken, async (req, res, next) => {
 // 바디로그 알람추가
 router.post('/bodylog/:id', verifyToken, async (req, res, next) => {
   console.log(req.userId);
-  const selectDate = moment(req.body.date).startOf('day');
-  const endDate = moment(req.body.date).endOf('day');
   let data = req.body.data;
 
   try {
@@ -135,30 +133,6 @@ router.post('/checklist/:id', verifyToken, async (req, res, next) => {
         { $push: { history: { $each: [history] } } }
       );
     }
-    // premium.checklist.map(async (item) => {
-    //   console.log(item);
-    //   if (item.workoutlist.isEditable === true) {
-    //     console.log('체크리스트 100%');
-    //     let user = await PremiumModel.findOne({ _id: req.params.id })
-    //       .populate('trainer')
-    //       .exec();
-    //     let trainer = await UsersModel.findOne({
-    //       _id: user.trainer.user,
-    //     }).exec();
-    //     let historyId = trainer.history;
-    //     console.log(historyId);
-
-    //     let history = {
-    //       content: 1,
-    //       date: req.body.date,
-    //     };
-
-    //     await HistoryModel.findOneAndUpdate(
-    //       { _id: historyId },
-    //       { $push: { history: { $each: [history] } } }
-    //     );
-    //   }
-    // });
 
     return res.status(500).json({ success: true, premium });
   } catch (err) {
@@ -166,37 +140,16 @@ router.post('/checklist/:id', verifyToken, async (req, res, next) => {
       .status(500)
       .json({ success: false, error: true, message: err.message });
   }
-
-  // console.log(checklist);
-  // // 알람 추가
-  // for (let i = 0; i < checklist[0].workoutlist.length; i++) {
-  //   console.log(checklist[0].workoutlist[i].isEditable);
-  //   if (checklist[0].workoutlist[i].isEditable === true) {
-  //     console.log('체크리스트 100%');
-  //     let user = await PremiumModel.findOne({ _id: req.params.id })
-  //       .populate('trainer')
-  //       .exec();
-  //     let trainer = await UsersModel.findOne({
-  //       _id: user.trainer.user,
-  //     }).exec();
-  //     let historyId = trainer.history;
-  //     console.log(historyId);
-  //     let history = {
-  //       content: 1,
-  //       date: req.body.date,
-  //     };
-  //     await HistoryModel.findOneAndUpdate(
-  //       { _id: historyId },
-  //       { $push: { history: { $each: [history] } } }
-  //     );
-  //   }
-  // }
 });
 
 // 알람 불러오기
 router.get('/', verifyToken, async (req, res, next) => {
   try {
-    let history = await HistoryModel.findOne({ user: req.userId }).exec();
+    let history = await HistoryModel.findOne({ user: req.userId })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return res.status(500).json({ success: true, history: history.history });
   } catch (err) {
     return res
       .status(500)
