@@ -120,7 +120,7 @@ router.get('/profile', verifyToken, async (req, res) => {
   console.log('_id', req.userId);
   try {
     let data = await UsersModel.findOne({ _id: req.userId }, { password: 0 })
-      .populate('premium')
+      .populate('premiumTrainer')
       .exec();
     res.status(200).json({ data });
   } catch (err) {

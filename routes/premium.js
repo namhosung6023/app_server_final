@@ -440,7 +440,7 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
   const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
   const filter = {
-    _id: req.userId,
+    _id: req.params.id,
     'bodyLog.date': { $gte: startDate, $lt: endDate },
   };
   const morningWeight = req.body.morningWeight; // const morningWeight = req.body.morningWeight;
@@ -449,13 +449,13 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
   console.log(req.body.morningWeight);
   console.log(req.body.nightWeight);
   try {
-    const result = await UsersModel.findOne(filter);
+    const result = await PremiumModel.findOne(filter);
     if (!result) {
       console.log('검색경과없음');
 
       if (weightNumber === 0)
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: {
@@ -466,8 +466,8 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
           }
         );
       else if (weightNumber === 1)
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { nightWeight: req.body.nightWeight, date: startDate },
@@ -477,18 +477,18 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
     } else {
       console.log('검색결과 있으면 실행');
       if (weightNumber === 0) {
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $set: { 'bodyLog.$[].morningWeight': req.body.morningWeight } },
           { new: true }
         ).exec();
       } else if (weightNumber === 1)
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $set: { 'bodyLog.$[].nightWeight': req.body.nightWeight } }
