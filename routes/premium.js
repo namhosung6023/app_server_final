@@ -74,10 +74,13 @@ router.get('/userlist/:id', async (req, res) => {
       })
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .sort({ createdAt: -1 })
+      .sort({ 'premiumUser.premium.createdAt': -1 })
       .exec();
+
+    console.log(trainer.premiumUser);
+
     let data = trainer.premiumUser;
-    let count = trainer.premiumUser.count();
+    let count = trainer.premiumUser.length;
 
     console.log('data > ', data);
 
