@@ -6,13 +6,17 @@ const HistorySchema = new Schema({
     ref: 'users',
   },
   // content: {
-  //   // 1.체크리스트 100%, 2.사진(체중관리), 3.몸무게(체중관리), 4.식단, 5.아침, 6.점심, 7.저녁, 8.간식,
-  //   // 9.체크리스트 등록, 10.체크리스트 수정, 11.코멘트 등록
+  //   // 1.체크리스트 100%, 2.공복, 3.자기 전, 4.아침, 5.점심, 6.저녁, 7.간식,
+  //   // 8.체크리스트 등록, 9.체크리스트 수정, 10.코멘트 등록, 11.코멘트 수정
   //   type: String,
   //   default: ""
   // },
   history: [
     {
+      title: {
+        type: String,
+        default: '',
+      },
       content: {
         type: String,
         default: '',
@@ -21,8 +25,8 @@ const HistorySchema = new Schema({
         type: Date,
       },
       isCheck: {
-        type: String,
-        default: '',
+        type: Boolean,
+        default: false,
       },
       createdAt: {
         type: Date,

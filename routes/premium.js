@@ -109,7 +109,9 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
     let premium = await PremiumModel.findOne({
       _id: req.params.id,
       'checklist.date': { $gte: selectDate, $lte: endDate },
-    }).exec();
+    })
+      .populate('trainer')
+      .exec();
     if (premium) {
       console.log('찾음');
       await PremiumModel.updateOne(
@@ -124,16 +126,20 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
       let user = await PremiumModel.findOne({ _id: req.params.id })
         .populate('user')
         .exec();
-      let historyId = user.history;
+      let historyId = user.user.history;
       console.log(historyId);
 
+      let trainer = await UsersModel.findOne({
+        _id: premium.trainer.user,
+      }).exec();
+
       let history = {
-        content: 10,
+        title: 10,
+        content: trainer.username,
         date: req.body.date,
-        isCheck: false,
       };
 
-      await HistoryModel.update(
+      await HistoryModel.findOneAndUpdate(
         { _id: historyId },
         { $push: { history: { $each: [history] } } }
       );
@@ -146,7 +152,29 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
         { $push: { checklist: { $each: [data] } } }
       ).exec();
 
-      return res.status(200).json({ status: 20, message: 'post' });
+      // 알람 추가
+      let user = await PremiumModel.findOne({ _id: req.params.id })
+        .populate('user')
+        .exec();
+      let historyId = user.user.history;
+      console.log(historyId);
+
+      let trainer = await UsersModel.findOne({
+        _id: premium.trainer.user,
+      }).exec();
+
+      let history = {
+        title: 9,
+        content: trainer.username,
+        date: req.body.date,
+      };
+
+      await HistoryModel.findOneAndUpdate(
+        { _id: historyId },
+        { $push: { history: { $each: [history] } } }
+      );
+
+      return res.status(200).json({ status: 200, message: 'post' });
     }
   } catch (err) {
     console.log(err);
@@ -225,13 +253,38 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
     let premium = await PremiumModel.findOne({
       _id: req.params.id,
       'trainerComment.date': { $gte: selectDate, $lte: endDate },
-    }).exec();
+    })
+      .populate('trainer')
+      .exec();
     if (!premium) {
       console.log('코멘트 날짜를 찾지 못함');
       await PremiumModel.update(
         { _id: req.params.id },
         { $push: { trainerComment: { $each: [data] } } }
       ).exec();
+
+      // 알람 추가
+      let user = await PremiumModel.findOne({ _id: req.params.id })
+        .populate('user')
+        .exec();
+      let historyId = user.user.history;
+      console.log(historyId);
+
+      let trainer = await UsersModel.findOne({
+        _id: premium.trainer.user,
+      }).exec();
+
+      let history = {
+        title: 11,
+        content: trainer.username,
+        date: req.body.date,
+      };
+
+      await HistoryModel.findOneAndUpdate(
+        { _id: historyId },
+        { $push: { history: { $each: [history] } } }
+      );
+
       return res.status(200).json({ status: 200, message: 'post' });
     } else {
       // 코멘트 삭제
@@ -263,6 +316,29 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
             },
           }
         ).exec();
+
+        // 알람 추가
+        let user = await PremiumModel.findOne({ _id: req.params.id })
+          .populate('user')
+          .exec();
+        let historyId = user.user.history;
+        console.log(historyId);
+
+        let trainer = await UsersModel.findOne({
+          _id: premium.trainer.user,
+        }).exec();
+
+        let history = {
+          title: 12,
+          content: trainer.username,
+          date: req.body.date,
+        };
+
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+
         return res
           .status(200)
           .json({ status: 200, success: true, message: 'update' });
@@ -303,7 +379,7 @@ router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
 });
 
 /*
- * 회훤 체트리스트, 관리일지 모두 출력 - 토큰, 날짜로 premium data 검색
+ * 회원 체트리스트, 관리일지 모두 출력 - 토큰, 날짜로 premium data 검색
  * Flutter User Provider Model에 한번에 저장
  */
 router.get('/user/:id', verifyToken, async (req, res, next) => {
@@ -321,7 +397,7 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
 
     result.bodyLog.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
-      let selectDate = moment(req.body.date).format('YYYY-MM-DD');
+      let selectDate = moment(req.query.date).format('YYYY-MM-DD');
       if (date === selectDate) bodyLog.push(item);
     });
 
@@ -369,7 +445,7 @@ router.get('/checklist/user/:id', verifyToken, async (req, res, next) => {
 // 회원 관리일지 출력
 router.get('/bodylog/user/:id', verifyToken, async (req, res, next) => {
   try {
-    let result = await UsersModel.findOne({ _id: req.params.id }).exec();
+    let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
 
     let bodyLog = [];
     result.bodyLog.map((item) => {

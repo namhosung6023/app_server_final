@@ -89,6 +89,9 @@ const PremiumSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  endDate: {
+    type: Date,
+  },
 });
 
 module.exports = mongoose.model('premium', PremiumSchema);

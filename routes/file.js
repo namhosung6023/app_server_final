@@ -55,6 +55,8 @@ const upload = multer({
 const fs = require('fs');
 const path = require('path'); //이미지 저장되는 위치 설정
 const UsersModel = require('../models/UsersModel');
+const PremiumModel = require('../models/PremiumModel');
+const HistoryModel = require('../models/HistoryModel');
 const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
 //다이어리 사진 몽고디비에 저장하기
@@ -69,7 +71,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     'bodyLog.date': { $gte: startDate, $lt: endDate },
   };
   try {
-    const result = await PremiumModel.findOne(filter);
+    const result = await PremiumModel.findOne(filter).populate('user').exec();
+    let historyId = result.user.history;
     if (!result) {
       if (pictureNumber === '0')
         await PremiumModel.findOneAndUpdate(
@@ -89,7 +92,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
             },
           }
         );
-      } else if (pictureNumber === '2')
+      } else if (pictureNumber === '2') {
         await PremiumModel.findOneAndUpdate(
           { _id: req.params.id },
           {
@@ -98,7 +101,18 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
             },
           }
         );
-      else if (pictureNumber === '3')
+
+        // 알람추가
+        let history = {
+          title: 4,
+          content: result.user.username,
+          date: req.body.date,
+        };
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+      } else if (pictureNumber === '3') {
         await PremiumModel.findOneAndUpdate(
           { _id: req.params.id },
           {
@@ -107,7 +121,18 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
             },
           }
         );
-      else if (pictureNumber === '4')
+
+        // 알람추가
+        let history = {
+          title: 5,
+          content: result.user.username,
+          date: req.body.date,
+        };
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+      } else if (pictureNumber === '4') {
         await PremiumModel.findOneAndUpdate(
           { _id: req.params.id },
           {
@@ -116,11 +141,33 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
             },
           }
         );
-      else
+
+        // 알람추가
+        let history = {
+          title: 6,
+          content: result.user.username,
+          date: req.body.date,
+        };
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+      } else
         await PremiumModel.findOneAndUpdate(
           { _id: req.params.id },
           { $push: { bodyLog: { snack: req.file.location, date: startDate } } }
         );
+
+      // 알람추가
+      let history = {
+        title: 7,
+        content: result.user.username,
+        date: req.body.date,
+      };
+      await HistoryModel.findOneAndUpdate(
+        { _id: historyId },
+        { $push: { history: { $each: [history] } } }
+      );
     } else {
       if (pictureNumber === '0')
         await PremiumModel.findOneAndUpdate(
@@ -181,7 +228,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 router.get('/diary/user/:id', verifyToken, async (req, res, next) => {
   // console.log(req.query.date);
   try {
-    let result = await UsersModel.findOne({ _id: req.params.id }).exec();
+    let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
 
     let bodyLog = [];
     result.bodyLog.map((item) => {
