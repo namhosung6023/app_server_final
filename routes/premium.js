@@ -363,17 +363,14 @@ router.put(
       { _id: req.params.id },
       {
         $set: {
-          'checklist.$[outer].workoutlist.$[inner]': {
-            name: req.body.name,
-            contents: req.body.contents,
-            isEditable: req.body.isChecked,
-          },
+          'checklist.$[outer].workoutlist.$[inner].isEditable':
+            req.body.isEditable,
         },
       },
       {
         arrayFilters: [
           { 'outer._id': req.body.checklistId },
-          { 'inner.name': req.body.name },
+          { 'inner._id': req.body.workoutId },
         ],
       }
     );
