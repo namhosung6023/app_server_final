@@ -34,6 +34,11 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
       premium: premium._id,
     };
 
+    let userData = {
+      trainer: req.params.id,
+      premium: premium._id,
+    };
+
     await TrainerModel.update(
       { _id: req.params.id },
       { $push: { premiumUser: { $each: [trainerData] } } }
@@ -41,7 +46,7 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
 
     await UsersModel.update(
       { _id: req.userId },
-      { $push: { premiumTrainer: { $each: [trainerData] } } }
+      { $push: { premiumTrainer: { $each: [userData] } } }
     );
 
     res.status(200).json({ message: 'success', premiumId: premium._id });
@@ -508,7 +513,7 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
   const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
   const filter = {
-    _id: req.userId,
+    _id: req.params.id,
     'bodyLog.date': { $gte: startDate, $lt: endDate },
   };
   const morningFoodTitle = req.body.morningFoodTitle;
@@ -518,7 +523,7 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
   console.log(
     '-------------------------------------------------------------------------------------------------------------------------'
   );
-  console.log(req.userId);
+  console.log(req.params.id);
   console.log(req.body.morningFoodTitle);
   console.log(req.body.afternoonFoodTitle);
   console.log(req.body.nightFoodTitle);
@@ -527,13 +532,13 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
     '-------------------------------------------------------------------------------------------------------------------------'
   );
   try {
-    const result = await UsersModel.findOne(filter);
+    const result = await PremiumModel.findOne(filter);
     if (!result) {
       console.log('날짜가 없으면 실행');
 
       if (foodTitleNumber === 0)
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: {
@@ -544,8 +549,8 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
           }
         );
       else if (foodTitleNumber === 1)
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: {
@@ -556,8 +561,8 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
           }
         );
       else if (foodTitleNumber === 2)
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: {
@@ -568,8 +573,8 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
           }
         );
       else
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { snackTitle: req.body.snackTitle, date: startDate },
@@ -579,9 +584,9 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
     } else {
       console.log('날짜가 있으면 실행');
       if (foodTitleNumber === 0) {
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           {
@@ -590,9 +595,9 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
           { new: true }
         ).exec();
       } else if (foodTitleNumber === 1)
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           {
@@ -602,17 +607,17 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
           }
         );
       else if (foodTitleNumber === 2)
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $set: { 'bodyLog.$[].nightFoodTitle': req.body.nightFoodTitle } }
         );
       else
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $set: { 'bodyLog.$[].snackTitle': req.body.snackTitle } }

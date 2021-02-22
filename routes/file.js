@@ -65,15 +65,15 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
   const filter = {
-    _id: req.userId,
+    _id: req.params.id,
     'bodyLog.date': { $gte: startDate, $lt: endDate },
   };
   try {
-    const result = await UsersModel.findOne(filter);
+    const result = await PremiumModel.findOne(filter);
     if (!result) {
       if (pictureNumber === '0')
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { morningBody: req.file.location, date: startDate },
@@ -81,8 +81,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
           }
         );
       else if (pictureNumber === '1') {
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { nightBody: req.file.location, date: startDate },
@@ -90,8 +90,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
           }
         );
       } else if (pictureNumber === '2')
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { morningFood: req.file.location, date: startDate },
@@ -99,8 +99,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
           }
         );
       else if (pictureNumber === '3')
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { afternoonFood: req.file.location, date: startDate },
@@ -108,8 +108,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
           }
         );
       else if (pictureNumber === '4')
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           {
             $push: {
               bodyLog: { nightFood: req.file.location, date: startDate },
@@ -117,55 +117,55 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
           }
         );
       else
-        await UsersModel.findOneAndUpdate(
-          { _id: req.userId },
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
           { $push: { bodyLog: { snack: req.file.location, date: startDate } } }
         );
     } else {
       if (pictureNumber === '0')
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $push: { 'bodyLog.$[].morningBody': req.file.location } }
         );
       else if (pictureNumber === '1')
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $push: { 'bodyLog.$[].nightBody': req.file.location } }
         );
       else if (pictureNumber === '2')
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $push: { 'bodyLog.$[].morningFood': req.file.location } }
         );
       else if (pictureNumber === '3')
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $push: { 'bodyLog.$[].afternoonFood': req.file.location } }
         );
       else if (pictureNumber === '4')
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $push: { 'bodyLog.$[].nightFood': req.file.location } }
         );
       else
-        await UsersModel.findOneAndUpdate(
+        await PremiumModel.findOneAndUpdate(
           {
-            _id: req.userId,
+            _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
           { $push: { 'bodyLog.$[].snack': req.file.location } }
