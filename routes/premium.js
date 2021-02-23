@@ -259,8 +259,8 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
           // { $set: { trainerComment : data }}
           {
             $set: {
-              'trainerComment.$[].comment': data.comment,
-              'trainerComment.$[].createdAt': data.createdAt,
+              'trainerComment.$.comment': data.comment,
+              'trainerComment.$.createdAt': data.createdAt,
             },
           }
         ).exec();
