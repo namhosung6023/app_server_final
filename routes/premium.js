@@ -61,21 +61,30 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
  * TrainerModel 트레이너 정보 제공
  */
 router.get('/userlist/:id', async (req, res) => {
-  console.log('req.query.page', req.query.page);
-
   try {
     const trainer = await TrainerModel.findOne({ _id: req.params.id })
       .populate({
         path: 'premiumUser',
         populate: {
           path: 'user premium',
-          select: 'profileImages username age gender startDate endDate',
+          select: 'profileImages username age gender startDate endDate history',
         },
       })
       // .sort({ 'premiumUser.premium.createdAt': -1 })
       .exec();
 
-    console.log(trainer.premiumUser);
+    let user = await UsersModel.findOne({ _id: trainer.user }).exec();
+
+    let history = await HistoryModel.findOne({ _id: user.history }).exec();
+
+    let alarm = [];
+
+    history.history.map((item) => {
+      if (item.content === trainer.premiumUser.user.username) {
+        console.log('history', item);
+        alarm.push(item);
+      }
+    });
 
     let data = trainer.premiumUser;
 
@@ -84,6 +93,7 @@ router.get('/userlist/:id', async (req, res) => {
     res.status(200).json({
       status: 200,
       data,
+      alarm,
       success: true,
     });
   } catch (err) {
