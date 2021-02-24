@@ -85,12 +85,15 @@ const PremiumSchema = new Schema({
       },
     },
   ],
-  createdAt: {
+  startDate: {
     type: Date,
-    default: Date.now,
   },
   endDate: {
     type: Date,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

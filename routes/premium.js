@@ -13,7 +13,8 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
   let data = {
     user: req.userId,
     trainer: req.params.id,
-    createdAt: Date.now(),
+    startDate: req.body.startDate,
+    endDate: req.body.endDate,
   };
 
   try {
@@ -60,7 +61,6 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
  * TrainerModel 트레이너 정보 제공
  */
 router.get('/userlist/:id', async (req, res) => {
-  const { page = 1, limit = 5, searchWord } = req.query;
   console.log('req.query.page', req.query.page);
 
   try {
@@ -69,26 +69,21 @@ router.get('/userlist/:id', async (req, res) => {
         path: 'premiumUser',
         populate: {
           path: 'user premium',
-          select: 'profileImages username age gender createdAt',
+          select: 'profileImages username age gender startDate endDate',
         },
       })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .sort({ 'premiumUser.premium.createdAt': -1 })
+      // .sort({ 'premiumUser.premium.createdAt': -1 })
       .exec();
 
     console.log(trainer.premiumUser);
 
     let data = trainer.premiumUser;
-    let count = trainer.premiumUser.length;
 
     console.log('data > ', data);
 
     res.status(200).json({
       status: 200,
       data,
-      totalPages: Math.ceil(count / limit),
-      currentPage: Math.ceil(page),
       success: true,
     });
   } catch (err) {
