@@ -125,7 +125,7 @@ router.post('/checklist/:id', verifyToken, async (req, res, next) => {
       console.log(historyId);
       let history = {
         title: 1,
-        content: premium.user.username,
+        content: req.userId,
         date: req.body.date,
       };
       await HistoryModel.findOneAndUpdate(

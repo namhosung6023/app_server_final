@@ -160,13 +160,13 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
       let historyId = user.user.history;
       console.log(historyId);
 
-      let trainer = await UsersModel.findOne({
-        _id: premium.trainer.user,
-      }).exec();
+      // let trainer = await UsersModel.findOne({
+      //   _id: premium.trainer.user,
+      // }).exec();
 
       let history = {
         title: 10,
-        content: trainer.username,
+        content: premium.trainer.user,
         date: req.body.date,
       };
 
@@ -190,13 +190,13 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
       let historyId = user.user.history;
       console.log(historyId);
 
-      let trainer = await UsersModel.findOne({
-        _id: premium.trainer.user,
-      }).exec();
+      // let trainer = await UsersModel.findOne({
+      //   _id: premium.trainer.user,
+      // }).exec();
 
       let history = {
         title: 9,
-        content: trainer.username,
+        content: premium.trainer.user,
         date: req.body.date,
       };
 
@@ -247,13 +247,13 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
       let historyId = user.user.history;
       console.log(historyId);
 
-      let trainer = await UsersModel.findOne({
-        _id: premium.trainer.user,
-      }).exec();
+      // let trainer = await UsersModel.findOne({
+      //   _id: premium.trainer.user,
+      // }).exec();
 
       let history = {
         title: 11,
-        content: trainer.username,
+        content: premium.trainer.user,
         date: req.body.date,
       };
 
@@ -301,13 +301,13 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
         let historyId = user.user.history;
         console.log(historyId);
 
-        let trainer = await UsersModel.findOne({
-          _id: premium.trainer.user,
-        }).exec();
+        // let trainer = await UsersModel.findOne({
+        //   _id: premium.trainer.user,
+        // }).exec();
 
         let history = {
           title: 12,
-          content: trainer.username,
+          content: premium.trainer.user,
           date: req.body.date,
         };
 

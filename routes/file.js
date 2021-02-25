@@ -105,7 +105,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
         // 알람추가
         let history = {
           title: 4,
-          content: result.user.username,
+          content: result.user._id,
           date: req.body.date,
         };
         await HistoryModel.findOneAndUpdate(
@@ -125,7 +125,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
         // 알람추가
         let history = {
           title: 5,
-          content: result.user.username,
+          content: result.user._id,
           date: req.body.date,
         };
         await HistoryModel.findOneAndUpdate(
@@ -145,7 +145,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
         // 알람추가
         let history = {
           title: 6,
-          content: result.user.username,
+          content: result.user._id,
           date: req.body.date,
         };
         await HistoryModel.findOneAndUpdate(
@@ -161,7 +161,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       // 알람추가
       let history = {
         title: 7,
-        content: result.user.username,
+        content: result.user._id,
         date: req.body.date,
       };
       await HistoryModel.findOneAndUpdate(
