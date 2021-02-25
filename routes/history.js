@@ -53,7 +53,7 @@ router.post('/bodylog/:id', verifyToken, async (req, res, next) => {
     if (data === 0) {
       let history = {
         title: 2,
-        content: premium.user.username,
+        content: req.userId,
         date: req.body.date,
       };
       await HistoryModel.findOneAndUpdate(
@@ -64,7 +64,7 @@ router.post('/bodylog/:id', verifyToken, async (req, res, next) => {
     } else {
       let history = {
         title: 3,
-        content: premium.user.username,
+        content: req.userId,
         date: req.body.date,
       };
       await HistoryModel.findOneAndUpdate(

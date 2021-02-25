@@ -67,7 +67,7 @@ router.get('/userlist/:id', async (req, res) => {
         path: 'premiumUser',
         populate: {
           path: 'user premium',
-          select: 'profileImages username age gender startDate endDate history',
+          select: '_id profileImages username age gender startDate endDate',
         },
       })
       // .sort({ 'premiumUser.premium.createdAt': -1 })
@@ -79,23 +79,47 @@ router.get('/userlist/:id', async (req, res) => {
 
     let alarm = [];
 
+    // console.log('username', trainer.premiumUser.user);
     history.history.map((item) => {
-      if (item.content === trainer.premiumUser.user.username) {
-        console.log('history', item);
-        alarm.push(item);
+      if (!item.isCheck) {
+        alarm.push(item.content);
+      } else {
+        console.log('알람없음');
+        return '알람없음';
       }
     });
+    console.log(alarm);
 
     let data = trainer.premiumUser;
 
-    console.log('data > ', data);
+    // let alarmuser = [];
+    // for (let i = 0; i <= data.length; i++) {
+    //   for (let j = 0; j <= alarm.length; j++) {
+    //     // console.log('username', username);
+    //     // console.log('alarm', alarm);
+    //     if (data[i].user.username == alarm[j]) {
+    //       return alarmuser.push(data[i].user.username);
+    //     }
+    //   }
+    // }
 
-    res.status(200).json({
-      status: 200,
-      data,
-      alarm,
-      success: true,
+    // alarmuser = alarmuser.filter(
+    //   (item, index) => alarmuser.indexOf(item) === index
+    // );
+    let count = {};
+
+    alarm.forEach((value, index) => {
+      count[value] = (count[value] || 0) + 1;
     });
+    console.log('alarmuser', count);
+
+    if (data)
+      res.status(200).json({
+        status: 200,
+        data,
+        count,
+        success: true,
+      });
   } catch (err) {
     res.status(500).json({ error: true, message: err });
   }

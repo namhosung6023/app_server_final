@@ -18,8 +18,8 @@ const HistorySchema = new Schema({
         default: '',
       },
       content: {
-        type: String,
-        default: '',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'users',
       },
       date: {
         type: Date,
