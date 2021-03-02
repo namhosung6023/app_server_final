@@ -90,7 +90,7 @@ router.get('/userlist/:id', async (req, res) => {
     });
     console.log(alarm);
 
-    let data = trainer.premiumUser;
+    let memberList = trainer.premiumUser;
 
     // let alarmuser = [];
     // for (let i = 0; i <= data.length; i++) {
@@ -113,10 +113,10 @@ router.get('/userlist/:id', async (req, res) => {
     });
     console.log('alarmuser', count);
 
-    if (data)
+    if (memberList)
       res.status(200).json({
         status: 200,
-        data,
+        memberList,
         count,
         success: true,
       });
