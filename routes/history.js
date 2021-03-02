@@ -14,7 +14,10 @@ router.post('/register', verifyToken, async (req, res, next) => {
   try {
     let user = await HistoryModel.findOne({ user: req.userId }).exec();
     if (user) {
-      return res.status(409).json({ success: false, message: '알람디비 있음' });
+      return res.json({
+        success: false,
+        message: '이미 알람디비가 존재합니다.',
+      });
     }
     let history = await new HistoryModel({ user: req.userId });
     await history.save();
@@ -22,11 +25,9 @@ router.post('/register', verifyToken, async (req, res, next) => {
 
     await UsersModel.update({ _id: req.userId }, { history: history._id });
 
-    return res.status(500).json({ success: true, message: '알람디비 생성' });
+    return res.json({ success: true, message: '알람디비 생성' });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -60,7 +61,7 @@ router.post('/bodylog/:id', verifyToken, async (req, res, next) => {
         { _id: historyId },
         { $push: { history: { $each: [history] } } }
       );
-      return res.status(500).json({ success: true, message: '공복' });
+      return res.json({ success: true, message: '공복' });
     } else {
       let history = {
         title: 3,
@@ -71,12 +72,10 @@ router.post('/bodylog/:id', verifyToken, async (req, res, next) => {
         { _id: historyId },
         { $push: { history: { $each: [history] } } }
       );
-      return res.status(500).json({ success: true, message: '자기 전' });
+      return res.json({ success: true, message: '자기 전' });
     }
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -110,7 +109,10 @@ router.post('/checklist/:id', verifyToken, async (req, res, next) => {
         complete = true;
       } else {
         complete = false;
-        return res.status(500).json({ success: false });
+        return res.json({
+          success: false,
+          message: '체크리스트가 100%가 아닙니다.',
+        });
       }
     }
 
@@ -134,11 +136,9 @@ router.post('/checklist/:id', verifyToken, async (req, res, next) => {
       );
     }
 
-    return res.status(500).json({ success: true, premium });
+    return res.json({ success: true, premium });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -149,11 +149,9 @@ router.get('/', verifyToken, async (req, res, next) => {
       .sort({ createdAt: -1 })
       .exec();
 
-    return res.status(500).json({ success: true, history: history.history });
+    return res.json({ success: true, history: history.history });
   } catch (err) {
-    return res
-      .status(500)
-      .json({ success: false, error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 

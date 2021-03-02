@@ -44,10 +44,10 @@ router.post('/register', verifyToken, async (req, res) => {
       { _id: req.userId },
       { trainer: trainer._id, type: '2' }
     );
-    res.status(200).json({ status: 200, success: true });
+    res.json({ success: true });
   } catch (err) {
     console.log(err);
-    if (err) res.status(500).json({ error: true, message: err });
+    if (err) res.json({ error: true, message: err.message });
   }
 });
 
@@ -61,10 +61,10 @@ router.get('/detail/:id', async (req, res) => {
       .populate('premiumUser')
       .populate('user')
       .exec();
-    res.status(200).json({ status: 200, data, success: true });
+    res.json({ success: true, data });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ err });
+    res.json({ error: true, message: err.message });
   }
 });
 

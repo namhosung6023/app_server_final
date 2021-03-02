@@ -17,11 +17,10 @@ router.post('/join', async (req, res, next) => {
 
   UsersModel.findOne({ email: req.body.email }, async (err, user) => {
     if (err) {
-      return res.status(500).json({ success: false, message: 'Server error' });
+      return res.json({ error: false, message: err.message });
     } else if (user) {
       console.log('이미 회원 가입 하였습니다.');
-      return res.status(200).json({
-        status: 409,
+      return res.json({
         success: false,
         message: '이미 회원 가입 하였습니다.',
       });
@@ -35,8 +34,8 @@ router.post('/join', async (req, res, next) => {
 
       await userInfo.save((err) => {
         if (err) {
-          return res.json({ success: false, message: 'mongodb저장 실패' });
           console.log(err);
+          return res.json({ error: true, message: err.message });
         }
       });
       let tokenInfo;
@@ -52,7 +51,7 @@ router.post('/join', async (req, res, next) => {
           expiresIn: '300d',
         });
 
-        return res.status(200).json({
+        return res.json({
           success: true,
           message: '회원가입을 진심으로 감사드립니다.',
           accesstoken: jsonWebToken,
@@ -73,22 +72,19 @@ router.post('/login', (req, res) => {
   UsersModel.findOne({ email: req.body.email }, (err, user) => {
     console.log(user);
     if (!user) {
-      res.status(200).json({
+      res.json({
         success: false,
-        message: '가입부터 하세요',
+        message: '회원가입이 되어 있지 않습니다',
       });
     } else if (user) {
       UsersModel.findOne(
         { email: req.body.email, password: req.body.password },
         (err, user) => {
           if (err) {
-            return res
-              .status(500)
-              .json({ error: true, message: 'Server error' });
+            return res.json({ error: true, message: err.message });
           }
           if (!user) {
-            return res.status(200).json({
-              status: 409,
+            return res.json({
               success: false,
               message: '비밀번호를 다시 확인해 주세요.',
             });
@@ -102,9 +98,7 @@ router.post('/login', (req, res) => {
               expiresIn: '300d',
             });
 
-            res
-              .status(200)
-              .json({ status: 200, success: true, accesstoken: jsonWebToken });
+            res.json({ success: true, accesstoken: jsonWebToken });
           }
         }
       );
@@ -122,10 +116,10 @@ router.get('/profile', verifyToken, async (req, res) => {
     let data = await UsersModel.findOne({ _id: req.userId }, { password: 0 })
       .populate('premiumTrainer')
       .exec();
-    res.status(200).json({ data });
+    res.json({ success: true, data });
   } catch (err) {
     console.log('err', err);
-    return res.status(500).json({ error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 

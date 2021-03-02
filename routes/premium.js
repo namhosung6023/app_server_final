@@ -21,9 +21,10 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
     let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
     let result = trainer.premiumUser.indexOf(req.userId);
     if (result >= 0) {
-      return res
-        .status(200)
-        .json({ status: 409, message: '이미 수강 신청을 하였습니다.' });
+      return res.json({
+        success: false,
+        message: '이미 수강 신청을 하였습니다.',
+      });
     }
 
     let premium = await new PremiumModel(data);
@@ -50,9 +51,9 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
       { $push: { premiumTrainer: { $each: [userData] } } }
     );
 
-    res.status(200).json({ message: 'success', premiumId: premium._id });
+    res.json({ success: true, premiumId: premium._id });
   } catch (err) {
-    return res.status(500).json({ error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -77,6 +78,10 @@ router.get('/userlist/:id', async (req, res) => {
 
     let history = await HistoryModel.findOne({ _id: user.history }).exec();
 
+    if (!history.history) {
+      return res.json({ success: true, memberList, message: '알람없음' });
+    }
+
     let alarm = [];
 
     // console.log('username', trainer.premiumUser.user);
@@ -85,7 +90,7 @@ router.get('/userlist/:id', async (req, res) => {
         alarm.push(item.content);
       } else {
         console.log('알람없음');
-        return '알람없음';
+        return res.json({ success: true, memberList, message: '알람없음' });
       }
     });
     console.log(alarm);
@@ -114,14 +119,13 @@ router.get('/userlist/:id', async (req, res) => {
     console.log('alarmuser', count);
 
     if (memberList)
-      res.status(200).json({
-        status: 200,
+      res.json({
+        success: true,
         memberList,
         count,
-        success: true,
       });
   } catch (err) {
-    res.status(500).json({ error: true, message: err });
+    res.status(500).json({ error: true, message: err.message });
   }
 });
 
@@ -175,7 +179,7 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
         { $push: { history: { $each: [history] } } }
       );
 
-      return res.status(200).json({ status: 200, message: 'update' });
+      return res.json({ success: true, message: 'update' });
     } else {
       console.log('못찾음');
       await PremiumModel.update(
@@ -205,11 +209,11 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
         { $push: { history: { $each: [history] } } }
       );
 
-      return res.status(200).json({ status: 200, message: 'post' });
+      return res.json({ success: true, message: 'post' });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ error: true, message: err });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -262,7 +266,7 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
         { $push: { history: { $each: [history] } } }
       );
 
-      return res.status(200).json({ status: 200, message: 'post' });
+      return res.json({ success: true, message: 'post' });
     } else {
       // 코멘트 삭제
       if (data.comment.length <= 0) {
@@ -274,9 +278,7 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
             },
           }
         ).exec();
-        return res
-          .status(200)
-          .json({ status: 200, success: true, message: 'delete' });
+        return res.json({ success: true, message: 'delete' });
       } else {
         // 코멘트 수정
         console.log('여기서 실행');
@@ -316,14 +318,12 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
           { $push: { history: { $each: [history] } } }
         );
 
-        return res
-          .status(200)
-          .json({ status: 200, success: true, message: 'update' });
+        return res.json({ success: true, message: 'update' });
       }
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ error: true, message: err });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -343,13 +343,13 @@ router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
     });
 
     if (comment) {
-      return res.json({ comment: comment, success: true });
+      return res.json({ success: true, comment: comment });
     } else {
-      return res.json({ comment: comment, success: false });
+      return res.json({ success: false, comment: comment });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -381,7 +381,7 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
       ? res.json({ data, success: true })
       : res.json({ data, success: false });
   } catch (err) {
-    return res.status(500).json({ error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -391,21 +391,25 @@ router.put(
   verifyToken,
   async (req, res, next) => {
     console.log(req.body);
-    await PremiumModel.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        $set: {
-          'checklist.$[outer].workoutlist.$[inner].isEditable':
-            req.body.isEditable,
+    try {
+      await PremiumModel.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $set: {
+            'checklist.$[outer].workoutlist.$[inner].isEditable':
+              req.body.isEditable,
+          },
         },
-      },
-      {
-        arrayFilters: [
-          { 'outer._id': req.body.checklistId },
-          { 'inner._id': req.body.workoutId },
-        ],
-      }
-    );
+        {
+          arrayFilters: [
+            { 'outer._id': req.body.checklistId },
+            { 'inner._id': req.body.workoutId },
+          ],
+        }
+      );
+    } catch (err) {
+      return res.json({ error: true, message: err.message });
+    }
   }
 );
 
@@ -490,6 +494,7 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
     return res.json({ success: true });
   } catch (err) {
     console.log(`mongoDB err : ${err.message}`);
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -614,6 +619,7 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
     return res.json({ success: true });
   } catch (err) {
     console.log(`mongoDB err : ${err.message}`);
+    return res.json({ error: true, message: err.message });
   }
 });
 

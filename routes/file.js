@@ -218,9 +218,10 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
           { $push: { 'bodyLog.$[].snack': req.file.location } }
         );
     }
-    return res.json({ photoUrl: req.file.location });
+    return res.json({ success: true, photoUrl: req.file.location });
   } catch (err) {
     console.log(`mongoDB err : ${err.message}`);
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -246,13 +247,13 @@ router.get('/diary/user/:id', verifyToken, async (req, res, next) => {
 
     // console.log(bodyLog);
     if (bodyLog) {
-      return res.json({ bodyLog: data.bodyLog });
+      return res.json({ success: true, bodyLog: data.bodyLog });
     } else {
-      return res.json({ bodyLog: data.bodyLog });
+      return res.json({ success: true, bodyLog: data.bodyLog });
     }
   } catch (err) {
     console.log(err);
-    return res.status(500).json({ error: true, message: err.message });
+    return res.json({ error: true, message: err.message });
   }
 });
 
@@ -264,9 +265,9 @@ router.get('/delete', verifyToken, (req, res) => {
     Key: req.query.path,
   };
   s3.deleteObject(params, (err) => {
-    if (err) return res.status(500).json({ err: true });
+    if (err) return res.json({ error: true, message: err.message });
 
-    return res.status(200).json({ success: true });
+    return res.json({ success: true });
   });
 });
 
