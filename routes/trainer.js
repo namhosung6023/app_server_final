@@ -51,4 +51,21 @@ router.post('/register', verifyToken, async (req, res) => {
   }
 });
 
+/*
+ * 트레이너  기본 정보 확인
+ *  트레이너 정보 제공
+ */
+router.get('/detail/:id', async (req, res) => {
+  try {
+    let data = await TrainerModel.findOne({ _id: req.params.id })
+      .populate('premiumUser')
+      .populate('user')
+      .exec();
+    res.status(200).json({ status: 200, data, success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ err });
+  }
+});
+
 module.exports = router;

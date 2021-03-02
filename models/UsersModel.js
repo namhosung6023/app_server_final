@@ -11,6 +11,10 @@ const UsersSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'history',
   },
+  trainer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'trainer',
+  },
   premiumTrainer: [
     {
       trainer: {
