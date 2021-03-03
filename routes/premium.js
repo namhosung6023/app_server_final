@@ -182,10 +182,16 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
       return res.json({ success: true, message: 'update' });
     } else {
       console.log('못찾음');
-      await PremiumModel.update(
+      await PremiumModel.updateOne(
         { _id: req.params.id },
         { $push: { checklist: { $each: [data] } } }
       ).exec();
+
+      let premium = await PremiumModel.findOne({
+        _id: req.params.id,
+      })
+        .populate('trainer')
+        .exec();
 
       // 알람 추가
       let user = await PremiumModel.findOne({ _id: req.params.id })
@@ -254,6 +260,12 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
       // let trainer = await UsersModel.findOne({
       //   _id: premium.trainer.user,
       // }).exec();
+
+      let premium = await PremiumModel.findOne({
+        _id: req.params.id,
+      })
+        .populate('trainer')
+        .exec();
 
       let history = {
         title: 11,
