@@ -370,11 +370,20 @@ router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
  * Flutter User Provider Model에 한번에 저장
  */
 router.get('/user/:id', verifyToken, async (req, res, next) => {
+  let trainerComment = [];
   let checklist = [];
   let bodyLog = [];
 
   try {
     let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
+
+    console.log(result.trainerComment);
+
+    result.trainerComment.map((item) => {
+      let date = moment(item.date).format('YYYY-MM-DD');
+      let selectDate = moment(req.query.date).format('YYYY-MM-DD');
+      if (date === selectDate) trainerComment.push(item);
+    });
 
     result.checklist.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
@@ -388,7 +397,7 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
       if (date === selectDate) bodyLog.push(item);
     });
 
-    let data = { checklist, bodyLog };
+    let data = { trainerComment, checklist, bodyLog };
     return data
       ? res.json({ data, success: true })
       : res.json({ data, success: false });
