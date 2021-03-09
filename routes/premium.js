@@ -133,6 +133,7 @@ router.get('/userlist/:id', async (req, res) => {
 router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   let data = {
     workoutlist: req.body.workoutlist,
+    dietlist: req.body.dietlist,
     date: req.body.date,
   };
   console.log(req.body.date);
@@ -154,7 +155,12 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
           _id: req.params.id,
           'checklist.date': { $gte: selectDate, $lte: endDate },
         },
-        { $set: { 'checklist.$.workoutlist': data.workoutlist } }
+        {
+          $set: {
+            'checklist.$.workoutlist': data.workoutlist,
+            'checklist.$.dietlist': data.dietlist,
+          },
+        }
       ).exec();
 
       // 알람 추가

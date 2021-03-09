@@ -41,6 +41,26 @@ const PremiumSchema = new Schema({
           },
         },
       ],
+      dietlist: [
+        {
+          time: {
+            type: String,
+            default: '',
+          },
+          name: {
+            type: String,
+            default: '',
+          },
+          contents: {
+            type: String,
+            default: '',
+          },
+          isEditable: {
+            type: Boolean,
+            default: false,
+          },
+        },
+      ],
       date: {
         type: Date,
         default: Date.now,
