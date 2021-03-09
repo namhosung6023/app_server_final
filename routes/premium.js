@@ -423,12 +423,17 @@ router.put(
           $set: {
             'checklist.$[outer].workoutlist.$[inner].isEditable':
               req.body.isEditable,
+            'checklist.$[outer].dietlist.$[diet].isEditable':
+              req.body.isEditable,
+            'checklist.$[outer].workoutlist.$[inner].checkDate': Date.now(),
+            'checklist.$[outer].dietlist.$[diet].checkDate': Date.now(),
           },
         },
         {
           arrayFilters: [
             { 'outer._id': req.body.checklistId },
             { 'inner._id': req.body.workoutId },
+            { 'diet._id': req.body.dietId },
           ],
         }
       );

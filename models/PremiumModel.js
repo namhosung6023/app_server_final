@@ -39,6 +39,10 @@ const PremiumSchema = new Schema({
             type: Boolean,
             default: false,
           },
+          checkDate: {
+            type: Date,
+            default: '',
+          },
         },
       ],
       dietlist: [
@@ -58,6 +62,10 @@ const PremiumSchema = new Schema({
           isEditable: {
             type: Boolean,
             default: false,
+          },
+          checkDate: {
+            type: Date,
+            default: '',
           },
         },
       ],
