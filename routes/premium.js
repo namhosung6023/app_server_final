@@ -372,7 +372,7 @@ router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
 });
 
 /*
- * 회원 체트리스트, 관리일지 모두 출력 - 토큰, 날짜로 premium data 검색
+ * 회원 체트리스트, 관리일지 모두 출력 - 토큰, 날짜로 premium data 검색(query)
  * Flutter User Provider Model에 한번에 저장
  */
 router.get('/user/:id', verifyToken, async (req, res, next) => {
@@ -382,8 +382,6 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
 
   try {
     let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
-
-    console.log(result.trainerComment);
 
     result.trainerComment.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
