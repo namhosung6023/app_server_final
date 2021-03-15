@@ -65,10 +65,13 @@ router.post(
   verifyToken,
   upload.single('file'),
   async (req, res) => {
+    console.log(req.body.date);
     const startDate = moment(req.body.date).startOf('day');
     const endDate = moment(req.body.date).endOf('day');
+    console.log(startDate);
+    console.log(endDate);
     const imageName = req.body.imageName;
-    const imagePath = `bodyLog.$[].${imageName}`;
+    const imagePath = `bodyLog.$.${imageName}`;
     const filter = {
       _id: req.params.id,
       'bodyLog.date': { $gte: startDate, $lte: endDate },
