@@ -59,171 +59,214 @@ const PremiumModel = require('../models/PremiumModel');
 const HistoryModel = require('../models/HistoryModel');
 const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
-//다이어리 사진 몽고디비에 저장하기
-router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-  const pictureNumber = req.body.pictureNumber;
-  require('moment-timezone');
-  moment.tz.setDefault('Asia/Seoul');
-  const startDate = moment(req.body.date, 'YYYY-MM-DD');
-  const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
-  const filter = {
-    _id: req.params.id,
-    'bodyLog.date': { $gte: startDate, $lt: endDate },
-  };
-  try {
-    const result = await PremiumModel.findOne(filter).populate('user').exec();
-    let historyId = result.user.history;
-    if (!result) {
-      if (pictureNumber === '0')
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: { morningBody: req.file.location, date: startDate },
-            },
-          }
-        );
-      else if (pictureNumber === '1') {
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: { nightBody: req.file.location, date: startDate },
-            },
-          }
-        );
-      } else if (pictureNumber === '2') {
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: { morningFood: req.file.location, date: startDate },
-            },
-          }
-        );
+// 사진 업로드
+router.post(
+  '/upload/:id',
+  verifyToken,
+  upload.single('file'),
+  async (req, res) => {
+    const startDate = moment(req.body.date, 'YYYY-MM-DD');
+    const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+    const imageName = req.body.imageName;
+    const imagePath = `bodyLog.$[].${imageName}`;
+    const filter = {
+      _id: req.params.id,
+      'bodyLog.date': { $gte: startDate, $lt: endDate },
+    };
 
-        // 알람추가
-        let history = {
-          title: 4,
-          content: result.user._id,
-          date: req.body.date,
-        };
-        await HistoryModel.findOneAndUpdate(
-          { _id: historyId },
-          { $push: { history: { $each: [history] } } }
-        );
-      } else if (pictureNumber === '3') {
+    try {
+      const result = await PremiumModel.findOne(filter).populate('user').exec();
+      if (!result) {
         await PremiumModel.findOneAndUpdate(
           { _id: req.params.id },
           {
             $push: {
-              bodyLog: { afternoonFood: req.file.location, date: startDate },
+              bodyLog: { [imageName]: req.file.location, date: startDate },
             },
           }
         );
-
-        // 알람추가
-        let history = {
-          title: 5,
-          content: result.user._id,
-          date: req.body.date,
-        };
-        await HistoryModel.findOneAndUpdate(
-          { _id: historyId },
-          { $push: { history: { $each: [history] } } }
-        );
-      } else if (pictureNumber === '4') {
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: { nightFood: req.file.location, date: startDate },
-            },
-          }
-        );
-
-        // 알람추가
-        let history = {
-          title: 6,
-          content: result.user._id,
-          date: req.body.date,
-        };
-        await HistoryModel.findOneAndUpdate(
-          { _id: historyId },
-          { $push: { history: { $each: [history] } } }
-        );
-      } else
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          { $push: { bodyLog: { snack: req.file.location, date: startDate } } }
-        );
-
-      // 알람추가
-      let history = {
-        title: 7,
-        content: result.user._id,
-        date: req.body.date,
-      };
-      await HistoryModel.findOneAndUpdate(
-        { _id: historyId },
-        { $push: { history: { $each: [history] } } }
-      );
-    } else {
-      if (pictureNumber === '0')
+      } else {
         await PremiumModel.findOneAndUpdate(
           {
             _id: req.params.id,
             'bodyLog.date': { $gte: startDate, $lt: endDate },
           },
-          { $push: { 'bodyLog.$[].morningBody': req.file.location } }
+          { $push: { [imagePath]: req.file.location } }
         );
-      else if (pictureNumber === '1')
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $push: { 'bodyLog.$[].nightBody': req.file.location } }
-        );
-      else if (pictureNumber === '2')
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $push: { 'bodyLog.$[].morningFood': req.file.location } }
-        );
-      else if (pictureNumber === '3')
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $push: { 'bodyLog.$[].afternoonFood': req.file.location } }
-        );
-      else if (pictureNumber === '4')
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $push: { 'bodyLog.$[].nightFood': req.file.location } }
-        );
-      else
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $push: { 'bodyLog.$[].snack': req.file.location } }
-        );
+      }
+      return res.json({ success: true, photoUrl: req.file.location });
+    } catch (err) {
+      console.log(`mongoDB err : ${err.message}`);
+      return res.json({ error: true, message: err.message });
     }
-    return res.json({ success: true, photoUrl: req.file.location });
-  } catch (err) {
-    console.log(`mongoDB err : ${err.message}`);
-    return res.json({ error: true, message: err.message });
   }
-});
+);
+
+//다이어리 사진 몽고디비에 저장하기
+// router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
+//   const pictureNumber = req.body.pictureNumber;
+//   require('moment-timezone');
+//   moment.tz.setDefault('Asia/Seoul');
+//   const startDate = moment(req.body.date, 'YYYY-MM-DD');
+//   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+//   const filter = {
+//     _id: req.params.id,
+//     'bodyLog.date': { $gte: startDate, $lt: endDate },
+//   };
+//   try {
+//     const result = await PremiumModel.findOne(filter).populate('user').exec();
+//     let historyId = result.user.history;
+//     if (!result) {
+//       if (pictureNumber === '0')
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { morningBody: req.file.location, date: startDate },
+//             },
+//           }
+//         );
+//       else if (pictureNumber === '1') {
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { nightBody: req.file.location, date: startDate },
+//             },
+//           }
+//         );
+//       } else if (pictureNumber === '2') {
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { morningFood: req.file.location, date: startDate },
+//             },
+//           }
+//         );
+
+//         // 알람추가
+//         let history = {
+//           title: 4,
+//           content: result.user._id,
+//           date: req.body.date,
+//         };
+//         await HistoryModel.findOneAndUpdate(
+//           { _id: historyId },
+//           { $push: { history: { $each: [history] } } }
+//         );
+//       } else if (pictureNumber === '3') {
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { afternoonFood: req.file.location, date: startDate },
+//             },
+//           }
+//         );
+
+//         // 알람추가
+//         let history = {
+//           title: 5,
+//           content: result.user._id,
+//           date: req.body.date,
+//         };
+//         await HistoryModel.findOneAndUpdate(
+//           { _id: historyId },
+//           { $push: { history: { $each: [history] } } }
+//         );
+//       } else if (pictureNumber === '4') {
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { nightFood: req.file.location, date: startDate },
+//             },
+//           }
+//         );
+
+//         // 알람추가
+//         let history = {
+//           title: 6,
+//           content: result.user._id,
+//           date: req.body.date,
+//         };
+//         await HistoryModel.findOneAndUpdate(
+//           { _id: historyId },
+//           { $push: { history: { $each: [history] } } }
+//         );
+//       } else
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           { $push: { bodyLog: { snack: req.file.location, date: startDate } } }
+//         );
+
+//       // 알람추가
+//       let history = {
+//         title: 7,
+//         content: result.user._id,
+//         date: req.body.date,
+//       };
+//       await HistoryModel.findOneAndUpdate(
+//         { _id: historyId },
+//         { $push: { history: { $each: [history] } } }
+//       );
+//     } else {
+//       if (pictureNumber === '0')
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $push: { 'bodyLog.$[].morningBody': req.file.location } }
+//         );
+//       else if (pictureNumber === '1')
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $push: { 'bodyLog.$[].nightBody': req.file.location } }
+//         );
+//       else if (pictureNumber === '2')
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $push: { 'bodyLog.$[].morningFood': req.file.location } }
+//         );
+//       else if (pictureNumber === '3')
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $push: { 'bodyLog.$[].afternoonFood': req.file.location } }
+//         );
+//       else if (pictureNumber === '4')
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $push: { 'bodyLog.$[].nightFood': req.file.location } }
+//         );
+//       else
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $push: { 'bodyLog.$[].snack': req.file.location } }
+//         );
+//     }
+//     return res.json({ success: true, photoUrl: req.file.location });
+//   } catch (err) {
+//     console.log(`mongoDB err : ${err.message}`);
+//     return res.json({ error: true, message: err.message });
+//   }
+// });
 
 // 사진 불러오기
 router.get('/diary/user/:id', verifyToken, async (req, res, next) => {

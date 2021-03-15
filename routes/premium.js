@@ -459,67 +459,153 @@ router.post('/comment/user/:id', verifyToken, async (req, res, next) => {
   );
 });
 
-//몸무게 몽고 디비에 저장하는 서버
+// 몸무게 업로드
 router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
-  const weightNumber = req.body.weightNumber;
-  require('moment-timezone');
-  moment.tz.setDefault('Asia/Seoul');
   const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+  const weightName = req.body.weightName;
+  const weightPath = `bodyLog.$[].${weightName}`;
   const filter = {
     _id: req.params.id,
     'bodyLog.date': { $gte: startDate, $lt: endDate },
   };
-  const morningWeight = req.body.morningWeight; // const morningWeight = req.body.morningWeight;
-  const nightWeight = req.body.nightWeight;
-  console.log(req.userId);
-  console.log(req.body.morningWeight);
-  console.log(req.body.nightWeight);
+
   try {
     const result = await PremiumModel.findOne(filter);
     if (!result) {
-      console.log('검색경과없음');
-
-      if (weightNumber === 0)
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: {
-                morningWeight: req.body.morningWeight,
-                date: startDate,
-              },
+      await PremiumModel.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $push: {
+            bodyLog: {
+              [weightName]: req.body.weight,
+              date: startDate,
             },
-          }
-        );
-      else if (weightNumber === 1)
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: { nightWeight: req.body.nightWeight, date: startDate },
-            },
-          }
-        );
+          },
+        }
+      );
     } else {
-      console.log('검색결과 있으면 실행');
-      if (weightNumber === 0) {
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
+      await PremiumModel.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          'bodyLog.date': { $gte: startDate, $lt: endDate },
+        },
+        { $set: { [weightPath]: req.body.weight } },
+        { new: true }
+      ).exec();
+    }
+    return res.json({ success: true });
+  } catch (err) {
+    console.log(`mongoDB err : ${err.message}`);
+    return res.json({ error: true, message: err.message });
+  }
+});
+
+//몸무게 몽고 디비에 저장하는 서버
+// router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
+//   const weightNumber = req.body.weightNumber;
+//   require('moment-timezone');
+//   moment.tz.setDefault('Asia/Seoul');
+//   const startDate = moment(req.body.date, 'YYYY-MM-DD');
+//   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+//   const filter = {
+//     _id: req.params.id,
+//     'bodyLog.date': { $gte: startDate, $lt: endDate },
+//   };
+//   const morningWeight = req.body.morningWeight; // const morningWeight = req.body.morningWeight;
+//   const nightWeight = req.body.nightWeight;
+//   console.log(req.userId);
+//   console.log(req.body.morningWeight);
+//   console.log(req.body.nightWeight);
+//   try {
+//     const result = await PremiumModel.findOne(filter);
+//     if (!result) {
+//       console.log('검색경과없음');
+
+//       if (weightNumber === 0)
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: {
+//                 morningWeight: req.body.morningWeight,
+//                 date: startDate,
+//               },
+//             },
+//           }
+//         );
+//       else if (weightNumber === 1)
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { nightWeight: req.body.nightWeight, date: startDate },
+//             },
+//           }
+//         );
+//     } else {
+//       console.log('검색결과 있으면 실행');
+//       if (weightNumber === 0) {
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $set: { 'bodyLog.$[].morningWeight': req.body.morningWeight } },
+//           { new: true }
+//         ).exec();
+//       } else if (weightNumber === 1)
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $set: { 'bodyLog.$[].nightWeight': req.body.nightWeight } }
+//         );
+//     }
+//     return res.json({ success: true });
+//   } catch (err) {
+//     console.log(`mongoDB err : ${err.message}`);
+//     return res.json({ error: true, message: err.message });
+//   }
+// });
+
+// 음식 제목 업로드
+router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
+  const startDate = moment(req.body.date, 'YYYY-MM-DD');
+  const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+  const foodName = req.body.foodName;
+  const foodNamePath = `bodyLog.$[].${foodName}`;
+  const filter = {
+    _id: req.params.id,
+    'bodyLog.date': { $gte: startDate, $lt: endDate },
+  };
+
+  try {
+    const result = await PremiumModel.findOne(filter);
+    if (!result) {
+      await PremiumModel.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $push: {
+            bodyLog: {
+              [foodName]: req.body.title,
+              date: startDate,
+            },
           },
-          { $set: { 'bodyLog.$[].morningWeight': req.body.morningWeight } },
-          { new: true }
-        ).exec();
-      } else if (weightNumber === 1)
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $set: { 'bodyLog.$[].nightWeight': req.body.nightWeight } }
-        );
+        }
+      );
+    } else {
+      await PremiumModel.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          'bodyLog.date': { $gte: startDate, $lt: endDate },
+        },
+        {
+          $set: { [foodNamePath]: req.body.title },
+        },
+        { new: true }
+      ).exec();
     }
     return res.json({ success: true });
   } catch (err) {
@@ -529,128 +615,128 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
 });
 
 // 음식 타이틀 몽고DB에 저장하는 서버
-router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
-  const foodTitleNumber = req.body.foodTitleNumber;
-  require('moment-timezone');
-  moment.tz.setDefault('Asia/Seoul');
-  const startDate = moment(req.body.date, 'YYYY-MM-DD');
-  const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
-  const filter = {
-    _id: req.params.id,
-    'bodyLog.date': { $gte: startDate, $lt: endDate },
-  };
-  const morningFoodTitle = req.body.morningFoodTitle;
-  const afternoonFoodTitle = req.body.afternoonFoodTitle;
-  const nightFoodTitle = req.body.nightFoodTitle;
-  const snackTitle = req.body.snackTitle;
-  console.log(
-    '-------------------------------------------------------------------------------------------------------------------------'
-  );
-  console.log(req.params.id);
-  console.log(req.body.morningFoodTitle);
-  console.log(req.body.afternoonFoodTitle);
-  console.log(req.body.nightFoodTitle);
-  console.log(req.body.snackTitle);
-  console.log(
-    '-------------------------------------------------------------------------------------------------------------------------'
-  );
-  try {
-    const result = await PremiumModel.findOne(filter);
-    if (!result) {
-      console.log('날짜가 없으면 실행');
+// router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
+//   const foodTitleNumber = req.body.foodTitleNumber;
+//   require('moment-timezone');
+//   moment.tz.setDefault('Asia/Seoul');
+//   const startDate = moment(req.body.date, 'YYYY-MM-DD');
+//   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+//   const filter = {
+//     _id: req.params.id,
+//     'bodyLog.date': { $gte: startDate, $lt: endDate },
+//   };
+//   const morningFoodTitle = req.body.morningFoodTitle;
+//   const afternoonFoodTitle = req.body.afternoonFoodTitle;
+//   const nightFoodTitle = req.body.nightFoodTitle;
+//   const snackTitle = req.body.snackTitle;
+//   console.log(
+//     '-------------------------------------------------------------------------------------------------------------------------'
+//   );
+//   console.log(req.params.id);
+//   console.log(req.body.morningFoodTitle);
+//   console.log(req.body.afternoonFoodTitle);
+//   console.log(req.body.nightFoodTitle);
+//   console.log(req.body.snackTitle);
+//   console.log(
+//     '-------------------------------------------------------------------------------------------------------------------------'
+//   );
+//   try {
+//     const result = await PremiumModel.findOne(filter);
+//     if (!result) {
+//       console.log('날짜가 없으면 실행');
 
-      if (foodTitleNumber === 0)
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: {
-                morningFoodTitle: req.body.morningFoodTitle,
-                date: startDate,
-              },
-            },
-          }
-        );
-      else if (foodTitleNumber === 1)
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: {
-                afternoonFoodTitle: req.body.afternoonFoodTitle,
-                date: startDate,
-              },
-            },
-          }
-        );
-      else if (foodTitleNumber === 2)
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: {
-                nightFoodTitle: req.body.nightFoodTitle,
-                date: startDate,
-              },
-            },
-          }
-        );
-      else
-        await PremiumModel.findOneAndUpdate(
-          { _id: req.params.id },
-          {
-            $push: {
-              bodyLog: { snackTitle: req.body.snackTitle, date: startDate },
-            },
-          }
-        );
-    } else {
-      console.log('날짜가 있으면 실행');
-      if (foodTitleNumber === 0) {
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          {
-            $set: { 'bodyLog.$[].morningFoodTitle': req.body.morningFoodTitle },
-          },
-          { new: true }
-        ).exec();
-      } else if (foodTitleNumber === 1)
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          {
-            $set: {
-              'bodyLog.$[].afternoonFoodTitle': req.body.afternoonFoodTitle,
-            },
-          }
-        );
-      else if (foodTitleNumber === 2)
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $set: { 'bodyLog.$[].nightFoodTitle': req.body.nightFoodTitle } }
-        );
-      else
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $set: { 'bodyLog.$[].snackTitle': req.body.snackTitle } }
-        );
-    }
-    return res.json({ success: true });
-  } catch (err) {
-    console.log(`mongoDB err : ${err.message}`);
-    return res.json({ error: true, message: err.message });
-  }
-});
+//       if (foodTitleNumber === 0)
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: {
+//                 morningFoodTitle: req.body.morningFoodTitle,
+//                 date: startDate,
+//               },
+//             },
+//           }
+//         );
+//       else if (foodTitleNumber === 1)
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: {
+//                 afternoonFoodTitle: req.body.afternoonFoodTitle,
+//                 date: startDate,
+//               },
+//             },
+//           }
+//         );
+//       else if (foodTitleNumber === 2)
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: {
+//                 nightFoodTitle: req.body.nightFoodTitle,
+//                 date: startDate,
+//               },
+//             },
+//           }
+//         );
+//       else
+//         await PremiumModel.findOneAndUpdate(
+//           { _id: req.params.id },
+//           {
+//             $push: {
+//               bodyLog: { snackTitle: req.body.snackTitle, date: startDate },
+//             },
+//           }
+//         );
+//     } else {
+//       console.log('날짜가 있으면 실행');
+//       if (foodTitleNumber === 0) {
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           {
+//             $set: { 'bodyLog.$[].morningFoodTitle': req.body.morningFoodTitle },
+//           },
+//           { new: true }
+//         ).exec();
+//       } else if (foodTitleNumber === 1)
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           {
+//             $set: {
+//               'bodyLog.$[].afternoonFoodTitle': req.body.afternoonFoodTitle,
+//             },
+//           }
+//         );
+//       else if (foodTitleNumber === 2)
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $set: { 'bodyLog.$[].nightFoodTitle': req.body.nightFoodTitle } }
+//         );
+//       else
+//         await PremiumModel.findOneAndUpdate(
+//           {
+//             _id: req.params.id,
+//             'bodyLog.date': { $gte: startDate, $lt: endDate },
+//           },
+//           { $set: { 'bodyLog.$[].snackTitle': req.body.snackTitle } }
+//         );
+//     }
+//     return res.json({ success: true });
+//   } catch (err) {
+//     console.log(`mongoDB err : ${err.message}`);
+//     return res.json({ error: true, message: err.message });
+//   }
+// });
 
 module.exports = router;
