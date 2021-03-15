@@ -65,13 +65,13 @@ router.post(
   verifyToken,
   upload.single('file'),
   async (req, res) => {
-    const startDate = moment(req.body.date, 'YYYY-MM-DD');
-    const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
+    const startDate = moment(req.body.date).startOf('day');
+    const endDate = moment(req.body.date).endOf('day');
     const imageName = req.body.imageName;
     const imagePath = `bodyLog.$[].${imageName}`;
     const filter = {
       _id: req.params.id,
-      'bodyLog.date': { $gte: startDate, $lt: endDate },
+      'bodyLog.date': { $gte: startDate, $lte: endDate },
     };
 
     try {
@@ -86,13 +86,9 @@ router.post(
           }
         );
       } else {
-        await PremiumModel.findOneAndUpdate(
-          {
-            _id: req.params.id,
-            'bodyLog.date': { $gte: startDate, $lt: endDate },
-          },
-          { $push: { [imagePath]: req.file.location } }
-        );
+        await PremiumModel.findOneAndUpdate(filter, {
+          $push: { [imagePath]: req.file.location },
+        });
       }
       return res.json({ success: true, photoUrl: req.file.location });
     } catch (err) {
