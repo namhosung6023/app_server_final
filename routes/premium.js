@@ -348,7 +348,12 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
 // 코멘트 보기 (회원)
 router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
   try {
-    let result = await PremiumModel.findOne({ _id: req.params.id }).exec();
+    let result = await PremiumModel.findOne({ _id: req.params.id })
+      .populate({
+        path: 'trainer',
+        populate: { path: 'user', select: 'username' },
+      })
+      .exec();
 
     let comment = [];
     result.trainerComment.map((item) => {
@@ -361,9 +366,17 @@ router.get('/comment/user/:id', verifyToken, async (req, res, next) => {
     });
 
     if (comment) {
-      return res.json({ success: true, comment: comment });
+      return res.json({
+        success: true,
+        comment: comment,
+        trainerName: result.trainer.user.username,
+      });
     } else {
-      return res.json({ success: false, comment: comment });
+      return res.json({
+        success: false,
+        comment: comment,
+        trainerName: result.trainer.user.username,
+      });
     }
   } catch (err) {
     console.log(err);
