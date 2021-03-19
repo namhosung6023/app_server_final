@@ -101,6 +101,45 @@ router.post(
   }
 );
 
+// 사진 삭제
+router.delete('/delete/:id', verifyToken, async (req, res) => {
+  console.log(req.body.date);
+  const startDate = moment(req.body.date).startOf('day');
+  const endDate = moment(req.body.date).endOf('day');
+  console.log(startDate);
+  console.log(endDate);
+  const imageName = req.body.imageName;
+  const imagePath = `bodyLog.$.${imageName}`;
+  const filter = {
+    _id: req.params.id,
+    'bodyLog.date': { $gte: startDate, $lte: endDate },
+  };
+
+  try {
+    const result = await PremiumModel.findOne(filter).populate('user').exec();
+
+    await PremiumModel.update(filter, {
+      $pull: {
+        [imagePath]: req.body.path,
+      },
+    });
+
+    let params = {
+      Bucket: awsconfig.Bucket,
+      Key: req.body.path,
+    };
+
+    s3.deleteObject(params, (err) => {
+      if (err) return res.status(500).json({ err: true });
+
+      return res.status(200).json({ success: true });
+    });
+  } catch (err) {
+    console.log(`mongoDB err : ${err.message}`);
+    return res.json({ error: true, message: err.message });
+  }
+});
+
 //다이어리 사진 몽고디비에 저장하기
 // router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 //   const pictureNumber = req.body.pictureNumber;
