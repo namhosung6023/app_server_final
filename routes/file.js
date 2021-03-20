@@ -124,9 +124,13 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
       },
     });
 
+
+    const arr = req.body.path.split('/');
+    console.log(req.body.path.split('/'));
+
     let params = {
       Bucket: awsconfig.Bucket,
-      Key: req.body.path,
+      Key: arr[3] + '/' + arr[4],
     };
 
     s3.deleteObject(params, (err) => {
