@@ -15,7 +15,7 @@ router.post('/join', async (req, res, next) => {
 
   let jsonWebToken;
 
-  UsersModel.findOne({ email: req.body.email }, async (err, user) => {
+  await UsersModel.findOne({ email: req.body.email }, async (err, user) => {
     if (err) {
       return res.json({ error: false, message: err.message });
     } else if (user) {
@@ -39,7 +39,7 @@ router.post('/join', async (req, res, next) => {
         }
       });
       let tokenInfo;
-      UsersModel.findOne({ email: req.body.email }, async (err, user) => {
+      await UsersModel.findOne({ email: req.body.email }, async (err, user) => {
         if (err) return console.log(err.message);
         console.log(user);
         tokenInfo = {
