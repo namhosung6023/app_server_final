@@ -229,6 +229,28 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   }
 });
 
+// 체크리스트 삭제
+router.delete('/checklist/delete/:id', verifyToken, async (req, res, next) => {
+  try {
+    await PremiumModel.findOneAndUpdate(
+      { _id: req.params.id },
+      {
+        $pull: {
+          'checklist.$[outer].workoutlist': { _id: req.body.workoutId },
+        },
+      },
+      {
+        arrayFilters: [{ 'outer._id': req.body.checklistId }],
+      }
+    );
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    return res.json({ error: true, message: err.message });
+  }
+});
+
 //트레이너 코멘트 수정(추가, 삭제)
 router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
   let data = {

@@ -48,8 +48,8 @@ const PremiumSchema = new Schema({
       dietlist: [
         {
           time: {
-            type: String,
-            default: '',
+            type: Number,
+            default: 0,
           },
           name: {
             type: String,
