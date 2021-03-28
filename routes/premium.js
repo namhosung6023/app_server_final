@@ -129,6 +129,47 @@ router.get('/userlist/:id', async (req, res) => {
   }
 });
 
+router.post('/checklist/update/:id', verifyToken, async (req, res, next) => {
+  console.log(req.body);
+
+  const startDate = moment(req.body.date).startOf('day');
+  const endDate = moment(req.body.date).endOf('day');
+
+  console.log(`startDate: ${startDate}`);
+  console.log(`endDate: ${endDate}`);
+
+  try {
+    const premium = await PremiumModel.findOne(filter);
+    if(premium) {
+      console.log(`${startDate}: checklist 있음`);
+      if(req.body.id === null) {
+        console.log('id 없음 => 리스트에 추가');
+
+        const data = {
+          name: req.body.data.name,
+          contents: req.body.data.contents,
+        }
+        const query = {_id: req.params.id, 'checklist.date': { $gte: startDate, $lte: endDate }};
+        const update = { $push: { 'checklist.$.workoutlist': data } };
+        
+        await PremiumModel.updateOne(query, update);
+        return res.json({ success: true });
+      } else {
+        console.log(`id 있음 => ${req.body.id}`);
+        
+        // query문 작성
+        // const query = {_id: req.params.id, 'checklist.date': { $gte: startDate, $lte: endDate }};
+        // options문 작성 (체크박스 put 참고)
+        await PremiumModel.updateOne(query, { $push: { 'checklist.$.workoutlist': data } });
+      }
+    } else {
+      console.log(`${startDate}: checklist 없음`);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+})
+
 // 트레이너가 회원의 체크리스트 추가
 router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   let data = {
