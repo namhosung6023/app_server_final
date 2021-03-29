@@ -145,27 +145,27 @@ router.post('/checklist/update/:id', verifyToken, async (req, res, next) => {
       if (req.body.id === null) {
         console.log('id 없음 => 리스트에 추가');
 
-        const data = {
-          name: req.body.data.name,
-          contents: req.body.data.contents,
-        };
-        const query = {
-          _id: req.params.id,
-          'checklist.date': { $gte: startDate, $lte: endDate },
-        };
-        const update = { $push: { 'checklist.$.workoutlist': data } };
+        // const data = {
+        //   name: req.body.data.name,
+        //   contents: req.body.data.contents,
+        // };
+        // const query = {
+        //   _id: req.params.id,
+        //   'checklist.date': { $gte: startDate, $lte: endDate },
+        // };
+        // const update = { $push: { 'checklist.$.workoutlist': data } };
 
-        await PremiumModel.updateOne(query, update);
-        return res.json({ success: true });
+        // await PremiumModel.updateOne(query, update);
+        // return res.json({ success: true });
       } else {
         console.log(`id 있음 => ${req.body.id}`);
 
         // query문 작성
         // const query = {_id: req.params.id, 'checklist.date': { $gte: startDate, $lte: endDate }};
         // options문 작성 (체크박스 put 참고)
-        await PremiumModel.updateOne(query, {
-          $push: { 'checklist.$.workoutlist': data },
-        });
+        // await PremiumModel.updateOne(query, {
+        //   $push: { 'checklist.$.workoutlist': data },
+        // });
       }
     } else {
       console.log(`${startDate}: checklist 없음`);
@@ -178,11 +178,11 @@ router.post('/checklist/update/:id', verifyToken, async (req, res, next) => {
 // 트레이너가 회원의 체크리스트 추가
 router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
   let data = {
-    workoutlist: req.body.workoutlist,
+    workoutlist: JSON.parse(req.body.workoutlist),
     dietlist: req.body.dietlist,
     date: req.body.date,
   };
-  console.log(req.body.date);
+  console.log(JSON.parse(req.body.workoutlist));
 
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
@@ -203,7 +203,7 @@ router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
       .exec();
     if (premium) {
       console.log('찾음');
-      await PremiumModel.updateOne(
+      await PremiumModel.findOneAndUpdate(
         {
           _id: req.params.id,
           checklist: {
