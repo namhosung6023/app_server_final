@@ -175,119 +175,237 @@ router.post('/checklist/update/:id', verifyToken, async (req, res, next) => {
   }
 });
 
-// 트레이너가 회원의 체크리스트 추가
-router.post('/checklist/trainer/:id', verifyToken, async (req, res, next) => {
-  let data = {
-    workoutlist: JSON.parse(req.body.workoutlist),
-    dietlist: req.body.dietlist,
-    date: req.body.date,
-  };
-  console.log(JSON.parse(req.body.workoutlist));
+// 트레이너가 회원의 체크리스트 추가(운동)
+router.post(
+  '/checklist/workoutlist/trainer/:id',
+  verifyToken,
+  async (req, res, next) => {
+    let data = {
+      workoutlist: JSON.parse(req.body.workoutlist),
+      date: req.body.date,
+    };
+    console.log(JSON.parse(req.body.workoutlist));
 
-  const selectDate = moment(data.date).startOf('day');
-  const endDate = moment(data.date).endOf('day');
+    const selectDate = moment(data.date).startOf('day');
+    const endDate = moment(data.date).endOf('day');
 
-  try {
-    let premium = await PremiumModel.findOne({
-      _id: req.params.id,
-      checklist: {
-        $elemMatch: {
-          date: {
-            $gte: selectDate,
-            $lte: endDate,
-          },
-        },
-      },
-    })
-      .populate('trainer')
-      .exec();
-    if (premium) {
-      console.log('찾음');
-      await PremiumModel.findOneAndUpdate(
-        {
-          _id: req.params.id,
-          checklist: {
-            $elemMatch: {
-              date: {
-                $gte: selectDate,
-                $lte: endDate,
-              },
+    try {
+      let premium = await PremiumModel.findOne({
+        _id: req.params.id,
+        checklist: {
+          $elemMatch: {
+            date: {
+              $gte: selectDate,
+              $lte: endDate,
             },
           },
         },
-        {
-          $set: {
-            'checklist.$.workoutlist': data.workoutlist,
-            'checklist.$.dietlist': data.dietlist,
-          },
-        }
-      ).exec();
-
-      // 알람 추가
-      let user = await PremiumModel.findOne({ _id: req.params.id })
-        .populate('user')
-        .exec();
-      let historyId = user.user.history;
-      console.log(historyId);
-
-      // let trainer = await UsersModel.findOne({
-      //   _id: premium.trainer.user,
-      // }).exec();
-
-      let history = {
-        title: 10,
-        content: premium.trainer.user,
-        date: req.body.date,
-      };
-
-      await HistoryModel.findOneAndUpdate(
-        { _id: historyId },
-        { $push: { history: { $each: [history] } } }
-      );
-
-      return res.json({ success: true, message: 'update' });
-    } else {
-      console.log('못찾음');
-      await PremiumModel.updateOne(
-        { _id: req.params.id },
-        { $push: { checklist: { $each: [data] } } }
-      ).exec();
-
-      let premium = await PremiumModel.findOne({
-        _id: req.params.id,
       })
         .populate('trainer')
         .exec();
+      if (premium) {
+        console.log('찾음');
+        await PremiumModel.findOneAndUpdate(
+          {
+            _id: req.params.id,
+            checklist: {
+              $elemMatch: {
+                date: {
+                  $gte: selectDate,
+                  $lte: endDate,
+                },
+              },
+            },
+          },
+          {
+            $set: {
+              'checklist.$.workoutlist': data.workoutlist,
+            },
+          }
+        ).exec();
 
-      // 알람 추가
-      let user = await PremiumModel.findOne({ _id: req.params.id })
-        .populate('user')
-        .exec();
-      let historyId = user.user.history;
-      console.log(historyId);
+        // 알람 추가
+        let user = await PremiumModel.findOne({ _id: req.params.id })
+          .populate('user')
+          .exec();
+        let historyId = user.user.history;
+        console.log(historyId);
 
-      // let trainer = await UsersModel.findOne({
-      //   _id: premium.trainer.user,
-      // }).exec();
+        // let trainer = await UsersModel.findOne({
+        //   _id: premium.trainer.user,
+        // }).exec();
 
-      let history = {
-        title: 9,
-        content: premium.trainer.user,
-        date: req.body.date,
-      };
+        let history = {
+          title: 10,
+          content: premium.trainer.user,
+          date: req.body.date,
+        };
 
-      await HistoryModel.findOneAndUpdate(
-        { _id: historyId },
-        { $push: { history: { $each: [history] } } }
-      );
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
 
-      return res.json({ success: true, message: 'post' });
+        return res.json({ success: true, message: 'update' });
+      } else {
+        console.log('못찾음');
+        await PremiumModel.updateOne(
+          { _id: req.params.id },
+          { $push: { checklist: { $each: [data] } } }
+        ).exec();
+
+        let premium = await PremiumModel.findOne({
+          _id: req.params.id,
+        })
+          .populate('trainer')
+          .exec();
+
+        // 알람 추가
+        let user = await PremiumModel.findOne({ _id: req.params.id })
+          .populate('user')
+          .exec();
+        let historyId = user.user.history;
+        console.log(historyId);
+
+        // let trainer = await UsersModel.findOne({
+        //   _id: premium.trainer.user,
+        // }).exec();
+
+        let history = {
+          title: 8,
+          content: premium.trainer.user,
+          date: req.body.date,
+        };
+
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+
+        return res.json({ success: true, message: 'post' });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.json({ error: true, message: err.message });
     }
-  } catch (err) {
-    console.log(err);
-    return res.json({ error: true, message: err.message });
   }
-});
+);
+
+// 트레이너가 회원의 체크리스트 추가(식단)
+router.post(
+  '/checklist/dietlist/trainer/:id',
+  verifyToken,
+  async (req, res, next) => {
+    let data = {
+      dietlist: JSON.parse(req.body.dietlist),
+      date: req.body.date,
+    };
+    console.log(JSON.parse(req.body.dietlist));
+
+    const selectDate = moment(data.date).startOf('day');
+    const endDate = moment(data.date).endOf('day');
+
+    try {
+      let premium = await PremiumModel.findOne({
+        _id: req.params.id,
+        checklist: {
+          $elemMatch: {
+            date: {
+              $gte: selectDate,
+              $lte: endDate,
+            },
+          },
+        },
+      })
+        .populate('trainer')
+        .exec();
+      if (premium) {
+        console.log('찾음');
+        await PremiumModel.findOneAndUpdate(
+          {
+            _id: req.params.id,
+            checklist: {
+              $elemMatch: {
+                date: {
+                  $gte: selectDate,
+                  $lte: endDate,
+                },
+              },
+            },
+          },
+          {
+            $set: {
+              'checklist.$.dietlist': data.dietlist,
+            },
+          }
+        ).exec();
+
+        // 알람 추가
+        let user = await PremiumModel.findOne({ _id: req.params.id })
+          .populate('user')
+          .exec();
+        let historyId = user.user.history;
+        console.log(historyId);
+
+        // let trainer = await UsersModel.findOne({
+        //   _id: premium.trainer.user,
+        // }).exec();
+
+        let history = {
+          title: 11,
+          content: premium.trainer.user,
+          date: req.body.date,
+        };
+
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+
+        return res.json({ success: true, message: 'update' });
+      } else {
+        console.log('못찾음');
+        await PremiumModel.updateOne(
+          { _id: req.params.id },
+          { $push: { checklist: { $each: [data] } } }
+        ).exec();
+
+        let premium = await PremiumModel.findOne({
+          _id: req.params.id,
+        })
+          .populate('trainer')
+          .exec();
+
+        // 알람 추가
+        let user = await PremiumModel.findOne({ _id: req.params.id })
+          .populate('user')
+          .exec();
+        let historyId = user.user.history;
+        console.log(historyId);
+
+        // let trainer = await UsersModel.findOne({
+        //   _id: premium.trainer.user,
+        // }).exec();
+
+        let history = {
+          title: 9,
+          content: premium.trainer.user,
+          date: req.body.date,
+        };
+
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
+
+        return res.json({ success: true, message: 'post' });
+      }
+    } catch (err) {
+      console.log(err);
+      return res.json({ error: true, message: err.message });
+    }
+  }
+);
 
 // 체크리스트 삭제
 router.delete('/checklist/delete/:id', verifyToken, async (req, res, next) => {
@@ -363,7 +481,7 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
         .exec();
 
       let history = {
-        title: 11,
+        title: 12,
         content: premium.trainer.user,
         date: req.body.date,
       };
@@ -422,7 +540,7 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
         // }).exec();
 
         let history = {
-          title: 12,
+          title: 13,
           content: premium.trainer.user,
           date: req.body.date,
         };
