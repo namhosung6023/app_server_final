@@ -407,27 +407,59 @@ router.post(
   }
 );
 
-// 체크리스트 삭제
-router.delete('/checklist/delete/:id', verifyToken, async (req, res, next) => {
-  try {
-    await PremiumModel.findOneAndUpdate(
-      { _id: req.params.id },
-      {
-        $pull: {
-          'checklist.$[outer].workoutlist': { _id: req.body.workoutId },
+// 체크리스트 삭제(운동)
+// body = checklistId, workoutId, params = premiumId
+router.delete(
+  '/checklist/workoutlist/delete/:id',
+  verifyToken,
+  async (req, res, next) => {
+    try {
+      await PremiumModel.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $pull: {
+            'checklist.$[outer].workoutlist': { _id: req.body.workoutId },
+          },
         },
-      },
-      {
-        arrayFilters: [{ 'outer._id': req.body.checklistId }],
-      }
-    );
+        {
+          arrayFilters: [{ 'outer._id': req.body.checklistId }],
+        }
+      );
 
-    return res.json({ success: true });
-  } catch (err) {
-    console.log(err);
-    return res.json({ error: true, message: err.message });
+      return res.json({ success: true });
+    } catch (err) {
+      console.log(err);
+      return res.json({ error: true, message: err.message });
+    }
   }
-});
+);
+
+// 체크리스트 삭제(식단)
+// body = checklistId, dietId, params = premiumId
+router.delete(
+  '/checklist/dietlist/delete/:id',
+  verifyToken,
+  async (req, res, next) => {
+    try {
+      await PremiumModel.findOneAndUpdate(
+        { _id: req.params.id },
+        {
+          $pull: {
+            'checklist.$[outer].dietlist': { _id: req.body.dietId },
+          },
+        },
+        {
+          arrayFilters: [{ 'outer._id': req.body.checklistId }],
+        }
+      );
+
+      return res.json({ success: true });
+    } catch (err) {
+      console.log(err);
+      return res.json({ error: true, message: err.message });
+    }
+  }
+);
 
 //트레이너 코멘트 수정(추가, 삭제)
 router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
