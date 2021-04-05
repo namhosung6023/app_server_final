@@ -489,41 +489,45 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
       .populate('trainer')
       .exec();
     if (!premium) {
-      console.log('코멘트 날짜를 찾지 못함');
-      await PremiumModel.update(
-        { _id: req.params.id },
-        { $push: { trainerComment: { $each: [data] } } }
-      ).exec();
+      if (data.comment.length <= 0) {
+        return res.json({ success: false });
+      } else {
+        console.log('코멘트 날짜를 찾지 못함');
+        await PremiumModel.update(
+          { _id: req.params.id },
+          { $push: { trainerComment: { $each: [data] } } }
+        ).exec();
 
-      // 알람 추가
-      let user = await PremiumModel.findOne({ _id: req.params.id })
-        .populate('user')
-        .exec();
-      let historyId = user.user.history;
-      console.log(historyId);
+        // 알람 추가
+        let user = await PremiumModel.findOne({ _id: req.params.id })
+          .populate('user')
+          .exec();
+        let historyId = user.user.history;
+        console.log(historyId);
 
-      // let trainer = await UsersModel.findOne({
-      //   _id: premium.trainer.user,
-      // }).exec();
+        // let trainer = await UsersModel.findOne({
+        //   _id: premium.trainer.user,
+        // }).exec();
 
-      let premium = await PremiumModel.findOne({
-        _id: req.params.id,
-      })
-        .populate('trainer')
-        .exec();
+        let premium = await PremiumModel.findOne({
+          _id: req.params.id,
+        })
+          .populate('trainer')
+          .exec();
 
-      let history = {
-        title: 12,
-        content: premium.trainer.user,
-        date: req.body.date,
-      };
+        let history = {
+          title: 12,
+          content: premium.trainer.user,
+          date: req.body.date,
+        };
 
-      await HistoryModel.findOneAndUpdate(
-        { _id: historyId },
-        { $push: { history: { $each: [history] } } }
-      );
+        await HistoryModel.findOneAndUpdate(
+          { _id: historyId },
+          { $push: { history: { $each: [history] } } }
+        );
 
-      return res.json({ success: true, message: 'post' });
+        return res.json({ success: true, message: 'post' });
+      }
     } else {
       // 코멘트 삭제
       if (data.comment.length <= 0) {
