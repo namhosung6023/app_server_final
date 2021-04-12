@@ -68,4 +68,29 @@ router.get('/detail/:id', async (req, res) => {
   }
 });
 
+/*
+ * 트레이너 리스트
+ * TrainerModel 트레이너 정보 제공
+ */
+router.get('/list', async (req, res) => {
+  let query = { type: '2' };
+
+  try {
+    // const count = await TrainerModel.find().count();
+    // console.log("count", count);
+    console.log('query', query);
+    const data = await UsersModel.find(query, { password: 0 })
+      .populate('trainer')
+      .exec();
+    console.log('data > ', data);
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+    console.log(err);
+    if (err) res.json({ error: true, message: err.message });
+  }
+});
+
 module.exports = router;
