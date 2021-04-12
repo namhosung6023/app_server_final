@@ -13,52 +13,48 @@ router.post('/join', async (req, res, next) => {
     return res.json({ success: false, message: '모두 필수 입력란 입니다.' });
   }
 
-  let jsonWebToken;
+  try {
+    let user = await UsersModel.findOne({ email: req.body.email }).exec();
 
-  await UsersModel.findOne({ email: req.body.email }, async (err, user) => {
-    if (err) {
-      return res.json({ error: false, message: err.message });
-    } else if (user) {
+    if (user) {
       console.log('이미 회원 가입 하였습니다.');
       return res.json({
         success: false,
         message: '이미 회원 가입 하였습니다.',
       });
     } else {
-      let userInfo = new UsersModel({
+      const userInfo = new UsersModel({
         email: req.body.email,
         loginType: 'EMAIL',
         password: req.body.password,
         username: req.body.username,
       });
+      await userInfo.save();
 
-      await userInfo.save((err) => {
-        if (err) {
-          console.log(err);
-          return res.json({ error: true, message: err.message });
-        }
+      user = await UsersModel.findOne({ email: req.body.email }).exec();
+
+      const tokenInfo = {
+        _id: user._id,
+        email: user.email,
+      };
+
+      const jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
+        expiresIn: '300d',
       });
-      let tokenInfo;
-      await UsersModel.findOne({ email: req.body.email }, async (err, user) => {
-        if (err) return console.log(err.message);
-        console.log(user);
-        tokenInfo = {
-          _id: user._id,
-          email: user.email,
-        };
-        console.log(tokenInfo);
-        jsonWebToken = jwt.sign(tokenInfo, JWT_SecretKey, {
-          expiresIn: '300d',
-        });
 
-        return res.json({
-          success: true,
-          message: '회원가입을 진심으로 감사드립니다.',
-          accesstoken: jsonWebToken,
-        });
+      return res.json({
+        success: true,
+        message: '회원가입을 진심으로 감사드립니다.',
+        accesstoken: jsonWebToken,
       });
     }
-  });
+  } catch (err) {
+    console.log(err.message);
+    return res.json({
+      error: true,
+      message: err.message,
+    });
+  }
 });
 
 //valuedata랑 trim적용하세요
