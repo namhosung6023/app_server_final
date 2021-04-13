@@ -25,33 +25,33 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
         success: false,
         message: '이미 수강 신청을 하였습니다.',
       });
+    } else {
+      let premium = await new PremiumModel(data);
+      await premium.save();
+      console.log('premium._id', premium._id);
+
+      let trainerData = {
+        user: req.userId,
+        premium: premium._id,
+      };
+
+      let userData = {
+        trainer: req.params.id,
+        premium: premium._id,
+      };
+
+      await TrainerModel.update(
+        { _id: req.params.id },
+        { $push: { premiumUser: { $each: [trainerData] } } }
+      );
+
+      await UsersModel.update(
+        { _id: req.userId },
+        { $push: { premiumTrainer: { $each: [userData] } } }
+      );
+
+      res.json({ success: true, premiumId: premium._id });
     }
-
-    let premium = await new PremiumModel(data);
-    await premium.save();
-    console.log('premium._id', premium._id);
-
-    let trainerData = {
-      user: req.userId,
-      premium: premium._id,
-    };
-
-    let userData = {
-      trainer: req.params.id,
-      premium: premium._id,
-    };
-
-    await TrainerModel.update(
-      { _id: req.params.id },
-      { $push: { premiumUser: { $each: [trainerData] } } }
-    );
-
-    await UsersModel.update(
-      { _id: req.userId },
-      { $push: { premiumTrainer: { $each: [userData] } } }
-    );
-
-    res.json({ success: true, premiumId: premium._id });
   } catch (err) {
     return res.json({ error: true, message: err.message });
   }
