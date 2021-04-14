@@ -13,8 +13,8 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
   let data = {
     user: req.userId,
     trainer: req.params.id,
-    startDate: req.body.startDate,
-    endDate: req.body.endDate,
+    startDate: Date.now(),
+    endDate: moment().add(3, 'months'),
   };
 
   try {
