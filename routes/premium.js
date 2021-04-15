@@ -24,12 +24,6 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
     }).exec();
     // let result = trainer.premiumUser.user.indexOf(req.userId);
 
-    // let result = trainer.premiumUser.map((item) => {
-    //   console.log(item.user);
-    //   console.log(req.userId);
-    //   if (item.user === req.userId) return 0;
-    // });
-
     console.log(trainer);
     if (trainer) {
       return res.json({
