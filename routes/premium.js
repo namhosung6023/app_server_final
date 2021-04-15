@@ -18,20 +18,20 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
   };
 
   try {
-    let trainer = await TrainerModel.findOne({ _id: req.params.id }).exec();
+    let trainer = await PremiumModel.findOne({
+      user: req.userId,
+      trainer: req.params.id,
+    }).exec();
     // let result = trainer.premiumUser.user.indexOf(req.userId);
-    let result;
-    trainer.premiumUser.map((item) => {
-      console.log(item.user);
-      if (item.user === req.userId) {
-        result = 0;
-      } else {
-        result = -1;
-      }
-    });
 
-    console.log(result);
-    if (result >= 0) {
+    // let result = trainer.premiumUser.map((item) => {
+    //   console.log(item.user);
+    //   console.log(req.userId);
+    //   if (item.user === req.userId) return 0;
+    // });
+
+    console.log(trainer);
+    if (trainer) {
       return res.json({
         success: false,
         message: '이미 수강 신청을 하였습니다.',
