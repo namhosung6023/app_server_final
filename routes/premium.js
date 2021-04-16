@@ -853,7 +853,7 @@ router.post('/diary/foodtitle/:id', verifyToken, async (req, res, next) => {
   const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
   const foodName = req.body.foodName;
-  const foodNamePath = `bodyLog.$[].${foodName}`;
+  const foodNamePath = `bodyLog.$.${foodName}`;
   const filter = {
     _id: req.params.id,
     'bodyLog.date': { $gte: startDate, $lt: endDate },
