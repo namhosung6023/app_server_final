@@ -468,7 +468,7 @@ router.delete(
 
 //트레이너 코멘트 수정(추가, 삭제)
 router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
-  let data = {
+  const data = {
     comment: req.body.comment,
     date: req.body.date,
     createdAt: new Date(),
@@ -479,8 +479,11 @@ router.post('/comment/update/:id', verifyToken, async (req, res, next) => {
   const selectDate = moment(data.date).startOf('day');
   const endDate = moment(data.date).endOf('day');
 
+  console.log(selectDate);
+  console.log(endDate);
+
   try {
-    let premium = await PremiumModel.findOne({
+    const premium = await PremiumModel.findOne({
       _id: req.params.id,
       trainerComment: {
         $elemMatch: {
