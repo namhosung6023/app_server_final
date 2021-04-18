@@ -55,7 +55,12 @@ router.post('/apply/:id', verifyToken, async (req, res, next) => {
         { $push: { premiumTrainer: { $each: [userData] } } }
       );
 
-      res.json({ success: true, premiumId: premium._id });
+      res.json({
+        success: true,
+        premiumId: premium._id,
+        startDate: premium.startDate,
+        endDate: premium.endDate,
+      });
     }
   } catch (err) {
     return res.json({ error: true, message: err.message });
@@ -682,7 +687,14 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
       if (date === selectDate) bodyLog.push(item);
     });
 
-    let data = { trainerName, trainerComment, checklist, bodyLog };
+    let data = {
+      trainerName,
+      trainerComment,
+      checklist,
+      bodyLog,
+      startDate: result.startDate,
+      endDate: result.endDate,
+    };
     return data
       ? res.json({ data, success: true })
       : res.json({ data, success: false });
