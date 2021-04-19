@@ -705,33 +705,97 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
   }
 });
 
-//체크박스 서버
+//체크박스 서버(운동)
 router.put(
-  '/checklist/user/checkbox/:id',
+  '/checklist/workoutlist/user/checkbox/:id',
   verifyToken,
   async (req, res, next) => {
     console.log(req.body);
     try {
-      await PremiumModel.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          $set: {
-            'checklist.$[outer].workoutlist.$[inner].isEditable':
-              req.body.isEditable,
-            'checklist.$[outer].dietlist.$[diet].isEditable':
-              req.body.isEditable,
-            'checklist.$[outer].workoutlist.$[inner].checkDate': Date.now(),
-            'checklist.$[outer].dietlist.$[diet].checkDate': Date.now(),
+      if (req.body.isEditable === true) {
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
+          {
+            $set: {
+              'checklist.$[outer].workoutlist.$[inner].isEditable':
+                req.body.isEditable,
+              'checklist.$[outer].workoutlist.$[inner].checkDate': Date.now(),
+            },
           },
-        },
-        {
-          arrayFilters: [
-            { 'outer._id': req.body.checklistId },
-            { 'inner._id': req.body.workoutId },
-            { 'diet._id': req.body.dietId },
-          ],
-        }
-      );
+          {
+            arrayFilters: [
+              { 'outer._id': req.body.checklistId },
+              { 'inner._id': req.body.workoutId },
+            ],
+          }
+        );
+      } else {
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
+          {
+            $set: {
+              'checklist.$[outer].workoutlist.$[inner].isEditable':
+                req.body.isEditable,
+              'checklist.$[outer].workoutlist.$[inner].checkDate': '',
+            },
+          },
+          {
+            arrayFilters: [
+              { 'outer._id': req.body.checklistId },
+              { 'inner._id': req.body.workoutId },
+            ],
+          }
+        );
+      }
+      return res.json({ success: true });
+    } catch (err) {
+      return res.json({ error: true, message: err.message });
+    }
+  }
+);
+
+//체크박스 서버(식단)
+router.put(
+  '/checklist/dietlist/user/checkbox/:id',
+  verifyToken,
+  async (req, res, next) => {
+    console.log(req.body);
+    try {
+      if (req.body.isEditable === true) {
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
+          {
+            $set: {
+              'checklist.$[outer].dietlist.$[inner].isEditable':
+                req.body.isEditable,
+              'checklist.$[outer].dietlist.$[inner].checkDate': Date.now(),
+            },
+          },
+          {
+            arrayFilters: [
+              { 'outer._id': req.body.checklistId },
+              { 'inner._id': req.body.dietId },
+            ],
+          }
+        );
+      } else {
+        await PremiumModel.findOneAndUpdate(
+          { _id: req.params.id },
+          {
+            $set: {
+              'checklist.$[outer].dietlist.$[inner].isEditable':
+                req.body.isEditable,
+              'checklist.$[outer].dietlist.$[inner].checkDate': '',
+            },
+          },
+          {
+            arrayFilters: [
+              { 'outer._id': req.body.checklistId },
+              { 'inner._id': req.body.dietId },
+            ],
+          }
+        );
+      }
     } catch (err) {
       return res.json({ error: true, message: err.message });
     }

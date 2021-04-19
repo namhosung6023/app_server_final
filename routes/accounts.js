@@ -8,7 +8,13 @@ const { JWT_SecretKey } = require('../config/env.js');
 const verifyToken = require('../libs/verifyToken');
 
 router.post('/join', async (req, res, next) => {
-  if (!req.body.username || !req.body.password || !req.body.email) {
+  if (
+    !req.body.username ||
+    !req.body.password ||
+    !req.body.email ||
+    !req.body.age ||
+    !req.body.gender
+  ) {
     console.log(req.body);
     return res.json({ success: false, message: '모두 필수 입력란 입니다.' });
   }
@@ -28,6 +34,9 @@ router.post('/join', async (req, res, next) => {
         loginType: 'EMAIL',
         password: req.body.password,
         username: req.body.username,
+        age: req.body.age,
+        gender: req.body.gender,
+        avatar: req.body.avatar,
       });
       await userInfo.save();
 

@@ -55,7 +55,7 @@ const UsersSchema = new Schema({
     type: String,
     default: '1', // '1' 일반유러, '2' 트레이너
   },
-  profileImages: {
+  avatar: {
     //유저 이미지
     type: String,
     default: '',
