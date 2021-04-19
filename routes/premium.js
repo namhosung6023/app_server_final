@@ -668,6 +668,7 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
 
     trainerName = result.trainer.user.username;
     trainerProfile = result.trainer.profileImages[0];
+    console.log(trainerProfile);
 
     result.trainerComment.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
@@ -689,6 +690,7 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
 
     let data = {
       trainerName,
+      trainerProfile,
       trainerComment,
       checklist,
       bodyLog,
