@@ -59,6 +59,14 @@ const PremiumModel = require('../models/PremiumModel');
 const HistoryModel = require('../models/HistoryModel');
 const { KinesisVideoSignalingChannels } = require('aws-sdk');
 
+// 유저 프로필 업로드
+router.post(
+  '/upload/avatar',
+  upload.single('file'),
+  async (req, res) => 
+    res.json({ success: true, photoUrl: req.file.location })  
+)
+
 // 사진 업로드
 router.post(
   '/upload/:id',
