@@ -674,6 +674,8 @@ router.get('/user/:id', verifyToken, async (req, res, next) => {
     result.trainerComment.map((item) => {
       let date = moment(item.date).format('YYYY-MM-DD');
       let selectDate = moment(req.query.date).format('YYYY-MM-DD');
+      console.log(item);
+      console.log(selectDate);
       if (date === selectDate) trainerComment.push(item);
     });
 
