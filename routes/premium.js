@@ -78,7 +78,7 @@ router.get('/userlist/:id', async (req, res) => {
         path: 'premiumUser',
         populate: {
           path: 'user premium',
-          select: '_id profileImages username age gender startDate endDate',
+          select: '_id avatar username age gender startDate endDate',
         },
       })
       // .sort({ 'premiumUser.premium.createdAt': -1 })
