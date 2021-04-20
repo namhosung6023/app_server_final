@@ -826,7 +826,7 @@ router.post('/diary/weight/:id', verifyToken, async (req, res, next) => {
   const startDate = moment(req.body.date, 'YYYY-MM-DD');
   const endDate = moment(startDate, 'YYYY-MM-DD').add(1, 'days');
   const weightName = req.body.weightName;
-  const weightPath = `bodyLog.$[].${weightName}`;
+  const weightPath = `bodyLog.$.${weightName}`;
   const filter = {
     _id: req.params.id,
     'bodyLog.date': { $gte: startDate, $lt: endDate },
