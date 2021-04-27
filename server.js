@@ -9,7 +9,7 @@ const trainer = require('./routes/trainer');
 const premium = require('./routes/premium');
 const history = require('./routes/history');
 const file = require('./routes/file');
-const betaService = require('./routes/betaService');
+const beta = require('./routes/beta');
 
 connectDB();
 
@@ -27,7 +27,7 @@ app.use('/trainer', trainer);
 app.use('/premium', premium);
 app.use('/history', history);
 app.use('/file', file);
-app.use('/betaService', betaService);
+app.use('/beta', beta);
 //app.use(passport.initialize())
 //require('./config/passport')(passport)
 
