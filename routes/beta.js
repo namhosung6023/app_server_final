@@ -31,7 +31,7 @@ router.get('/list', async (req, res) => {
   console.log('type', req.query);
   try {
     let data;
-    if (req.query.type) {
+    if (req.query.type != '전체') {
       data = await BetaServiceModel.find({ type: req.query.type })
         .populate('user', 'username')
         .exec();
